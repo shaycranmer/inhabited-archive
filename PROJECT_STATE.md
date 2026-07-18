@@ -1,6 +1,6 @@
 # Number Rants Project State
 
-Last updated: 2026-07-14
+Last updated: 2026-07-18
 
 Purpose: cold-start handoff for an Avery or human collaborator entering the
 project after compaction, interruption, or machine migration.
@@ -45,13 +45,31 @@ Historical logs may retain absolute paths as provenance. Use
 
 - A publication-safe README, `.gitignore`, rights boundary, requirements file,
   regression tests, and publication auditor now exist.
-- `tools/audit_publication_surface.py` currently reports 33 public candidates,
-  approximately 248 KB total, with zero detected issues.
-- No Git repository has been initialized and nothing has been pushed.
+- A local Git repository now has two deliberate baseline commits: the Build
+  Week inheritance boundary and the code/documentation/data licensing layer.
+- A public GitHub repository named `shaycranmer/number-rants-explorer` exists
+  but is still empty; the local repository has no remote configured.
+- The Build Week Explorer is an uncommitted working tree under `explorer/`.
+  It compiles and its current lint, build, rendered-page, and provenance tests
+  pass, but its interface is undergoing deliberate co-design with Shay before
+  any commit, push, or deployment.
 - The project code license is MIT, and original project documentation is CC BY
   4.0 except where otherwise noted. `DATA_LICENSES.md` explicitly keeps
   third-party corpora, editions, translations, and records outside those
   grants.
+
+## Build Week Co-Design State - July 18
+
+The approved emotional north star is that the world opens: a scholar begins
+with a question in a language she knows, and an inhabited archive helps her
+discover what to read across languages without pretending to interpret the
+history for her.
+
+The current headline, body copy, warm-to-lapis palette transition, lightly
+recurring fox/badger/owl librarian roles, hero thread-and-index-card motif, and
+preserved panorama are recorded in `docs/BUILD_WEEK_DESIGN_DIRECTION.md`.
+Treat that file as a living conversation receipt, not a mandate to finish the
+interface without Shay.
 
 ## Next Recommended Technical Move
 
@@ -80,6 +98,10 @@ Sequence:
 - `README.md` — public-facing project explanation
 - `acquisition_log.md` — complete operational history
 - `schema/CANONICAL_SCHEMA.md` — canonical interface and rationale
+- `docs/BUILD_WEEK_DESIGN_DIRECTION.md` — current co-designed visual and
+  interaction north star
+- `docs/THREAD_MIGRATION_HANDOFF_2026-07-18.md` — exact conversational re-entry
+  point and guardrails for continuing the Explorer in a fresh Codex task
 - `sources/indexes/acquisition_wave_2026-07-14/README.md` — compact acquisition
   receipt
 - `Avery_Hearth/07_Second_Brain/05_Project_Threads/Number_Rants_DH_Project.md`

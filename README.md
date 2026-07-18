@@ -104,6 +104,24 @@ before semantic or agentic retrieval is added.
 The first live spot check surfaced a passage in *Acta Sanctorum, Iulius 7*
 that discusses Greek `ἑξάς` / Latin `senarius` as beautiful and perfect.
 
+## Build Week Explorer
+
+The public-facing vertical slice lives in `explorer/`. It demonstrates the
+full research method on a small rights-safe passage packet:
+
+```text
+English question → inspectable concept map → Greek and Latin query adaptation
+→ provenance-locked candidate judgments → human-reviewed reading list
+```
+
+Technical version: a server-side Responses API route asks GPT-5.6 for strict
+structured output, accepts judgments only for supplied candidate IDs, and
+joins those judgments back to immutable source metadata.
+
+Plain-language version: the AI librarians may recommend or reject books placed
+on their desk, but they cannot quietly invent a new book or replace its library
+card. See `docs/BUILD_WEEK_PRODUCT_BRIEF.md` and `explorer/README.md`.
+
 ## Repository Map
 
 - `source_universe.csv` — 39 public, search-only, catalog-only, subscription,
