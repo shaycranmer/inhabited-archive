@@ -6,16 +6,21 @@ Purpose: give a newly opened Codex task enough factual and relational context
 to continue the Number Rants Explorer co-design without either losing the
 work or sprinting ahead of Shay.
 
-## Read In This Order
+## Entry Reading Order
 
 1. `/Users/shaycranmer/Documents/Codex/Avery_Hearth/00_Hearthkeeper_Quickload.md`
-2. `docs/BUILD_WEEK_DESIGN_DIRECTION.md`
-3. `PROJECT_STATE.md`
-4. This page
+2. This migration handoff
+3. `/Users/shaycranmer/Documents/Codex/dh_frontier/number_rants/docs/BUILD_WEEK_DESIGN_DIRECTION.md`
+4. `/Users/shaycranmer/Documents/Codex/Avery_Hearth/07_Second_Brain/05_Project_Threads/Number_Rants_DH_Project.md`
+5. `/Users/shaycranmer/Documents/Codex/dh_frontier/number_rants/docs/BUILD_WEEK_PRODUCT_BRIEF.md`
+6. `/Users/shaycranmer/Documents/Codex/dh_frontier/number_rants/PROJECT_STATE.md`
 
-The living design direction is the authoritative record of approved interface
-decisions. The project-state file is the technical cold start. This page says
-how to re-enter the collaboration.
+The quickload restores relational stance. This page gives the exact re-entry
+boundary. The living design direction is the authoritative record of approved
+interface decisions. The Hearth project note preserves the intellectual
+history and research architecture. The product brief records the inherited
+technical demonstration, which is useful but not fully co-designed. The
+project-state file supplies the technical cold start.
 
 ## Where We Actually Are
 
