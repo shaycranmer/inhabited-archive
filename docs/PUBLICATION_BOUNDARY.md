@@ -1,0 +1,54 @@
+# Public Repository Boundary
+
+## Publish
+
+- project README and architecture;
+- source-universe and candidate-work maps;
+- acquisition, validation, normalization, and portability code;
+- canonical schema and explanatory documentation;
+- unit tests and synthetic fixtures;
+- acquisition counts, checksums, commit IDs, and bounded error summaries;
+- research questions, evaluation design, and non-sensitive candidate metadata;
+- small derived examples only when their source license permits publication.
+
+## Keep Local
+
+- `sources/raw/` in its entirety;
+- `derived/` databases and search indexes;
+- Corpus Corporum TEI and its normalized full-text database;
+- complete Sefaria or OpenITI payload trees;
+- full third-party Git checkouts, even when they are separately public;
+- interrupted downloads, caches, temporary files, and operational logs;
+- generated manifests containing machine-specific absolute paths;
+- source text whose public-domain or redistribution status has not been
+  confirmed at the edition/version level.
+
+## Review Before Publishing
+
+- metadata exported from providers with noncommercial or unclear terms;
+- quoted candidate passages;
+- OCR derived from scans whose edition rights differ from the underlying work;
+- screenshots or examples that expose copyrighted source text;
+- aggregate data that could function as a substitute for a restricted corpus;
+- filenames or logs that reveal personal filesystem information.
+
+## Portfolio Principle
+
+Demonstrate the engineering and scholarly decisions without redistributing the
+library. A reviewer should be able to understand the problem, inspect the
+architecture, run tests, evaluate safety and provenance choices, and see
+validated results. They do not need 60 GiB of third-party texts to assess the
+quality of the work.
+
+## Before the First Push
+
+1. Initialize Git only at the `number_rants/` project root.
+2. Confirm `.gitignore` excludes raw corpora, derivatives, generated indexes,
+   logs, virtual environments, caches, and OS artifacts.
+3. Run `git status --short --ignored` and inspect every unignored file.
+4. Search tracked candidates for `/Users/`, email addresses, tokens, API keys,
+   and private Hearth paths.
+5. Select a project-level code license; do not imply that license covers
+   third-party data.
+6. Run the unit tests and a README link check.
+7. Make the first commit locally and review it before creating a remote.

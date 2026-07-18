@@ -1,0 +1,46 @@
+# Third-party and restricted research data
+/sources/raw/
+/derived/
+
+# Generated indexes and runtime state stay local by default
+/sources/indexes/**
+!/sources/indexes/acquisition_wave_2026-07-14/
+/sources/indexes/acquisition_wave_2026-07-14/**
+!/sources/indexes/acquisition_wave_2026-07-14/README.md
+
+# Interrupted downloads, archives, databases, and logs
+*.partial
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.sqlite
+*.sqlite3
+*.db
+*.log
+
+# Python environments and caches
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# macOS and editor artifacts
+.DS_Store
+._*
+.idea/
+.vscode/
+*~
+
+# Migration receipts may contain absolute local paths
+migration_verification*.json
