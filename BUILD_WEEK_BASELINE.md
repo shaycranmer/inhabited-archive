@@ -112,14 +112,16 @@ restricted Corpus Corporum text, full OpenITI or Sefaria payload trees, local
 derived databases, or source text whose redistribution status has not been
 confirmed at the edition/version level.
 
-Proposed licensing model:
+Adopted licensing model:
 
-- project source code: MIT License;
-- original project documentation: Creative Commons Attribution 4.0;
+- project source code: MIT License (`LICENSE`);
+- original project documentation: Creative Commons Attribution 4.0
+  (`LICENSE-DOCUMENTATION.md`);
 - demonstration passages and metadata: per-record source and license fields;
 - third-party corpora and editions: not relicensed by this project.
 
-See `docs/PUBLICATION_BOUNDARY.md` for the operational publication rules.
+See `DATA_LICENSES.md` and `docs/PUBLICATION_BOUNDARY.md` for the operational
+publication rules.
 
 ## Baseline Verification
 

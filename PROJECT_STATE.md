@@ -48,9 +48,10 @@ Historical logs may retain absolute paths as provenance. Use
 - `tools/audit_publication_surface.py` currently reports 33 public candidates,
   approximately 248 KB total, with zero detected issues.
 - No Git repository has been initialized and nothing has been pushed.
-- Before first publication, Shay should choose the repository name and the
-  code license. A project code license must not be presented as licensing any
-  third-party corpus.
+- The project code license is MIT, and original project documentation is CC BY
+  4.0 except where otherwise noted. `DATA_LICENSES.md` explicitly keeps
+  third-party corpora, editions, translations, and records outside those
+  grants.
 
 ## Next Recommended Technical Move
 

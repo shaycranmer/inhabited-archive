@@ -48,7 +48,8 @@ quality of the work.
 3. Run `git status --short --ignored` and inspect every unignored file.
 4. Search tracked candidates for `/Users/`, email addresses, tokens, API keys,
    and private Hearth paths.
-5. Select a project-level code license; do not imply that license covers
-   third-party data.
+5. Confirm the MIT code license, CC BY 4.0 documentation license, and
+   `DATA_LICENSES.md` remain accurate; do not imply that they cover third-party
+   data.
 6. Run the unit tests and a README link check.
 7. Make the first commit locally and review it before creating a remote.

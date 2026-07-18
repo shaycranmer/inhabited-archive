@@ -152,8 +152,11 @@ OpenITI is CC BY-NC-SA 4.0 with source-level provenance variation. Sefaria
 rights are version-specific. PTA, Coptic SCRIPTORIUM, BHSA, OCR datasets, and
 individual editions retain their own licenses and attribution requirements.
 
-No project-level code license has been selected yet. Until one is added, the
-code should not be assumed reusable merely because the repository is visible.
+Project source code is released under the MIT License. Original project
+documentation is licensed under CC BY 4.0 except where otherwise noted.
+Neither license applies to third-party corpora, editions, translations, or
+source records. See `LICENSE`, `LICENSE-DOCUMENTATION.md`,
+`DATA_LICENSES.md`, and `docs/PUBLICATION_BOUNDARY.md`.
 
 ## Roadmap
 
