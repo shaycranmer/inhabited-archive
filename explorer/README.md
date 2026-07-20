@@ -1,14 +1,16 @@
-# Number Rants Explorer
+# The Inhabited Archive
 
-The Build Week research interface for the larger Number Rants corpus project.
+The Build Week research instrument growing from the larger Number Rants corpus
+project. Number Rants remains the proving ground and demonstration inquiry;
+The Inhabited Archive is the topic-general public interface.
 
 > Translate the question. Not the library.
 
-The app turns an English research question into an inspectable concept map,
-adapts that map for Ancient Greek and Latin search, and returns a short cited
-reading list with human adjudication controls. It uses a rights-safe packet of
-primary-source excerpts, so the public demo does not expose the local 60 GiB
-research library.
+The app turns an arbitrary scholarly question into an inspectable concept map,
+then prepares that map for historically responsible language adaptation and
+local corpus search. Number Rants is the proving ground, not a hardcoded query
+type. The honest boundary is the coverage of the installed, publication-safe
+micro-corpus and its supported language librarians.
 
 ## Run locally
 
@@ -21,17 +23,27 @@ pnpm run dev
 
 Open `http://localhost:3000`.
 
-The documented demo works without secrets. To enable live query planning and
-candidate judgments, copy `.env.example` to `.env.local` and add an OpenAI API
-key:
+The documented workspace works without secrets and supports direct card
+editing, pinning, set-aside, and restoration. To let the fox construct and
+revise a map for a new question, copy `.env.example` to `.env.local` and add an
+OpenAI API key:
 
 ```bash
 OPENAI_API_KEY=your_key_here
-OPENAI_MODEL=gpt-5.6-sol
+OPENAI_MODEL=gpt-5.6
 ```
 
+Create and paste the key only in the local `.env.local` file—not in the site,
+a chat, a screenshot, source code, or a Git commit. Keep the variable name
+exactly `OPENAI_API_KEY`; prefixes such as `NEXT_PUBLIC_` or `VITE_` can expose
+values to browser code. The repository ignores `.env.local`, while the empty
+`.env.example` remains safe to publish. Restart the local development server
+after adding the key.
+
 The key stays server-side. The live endpoint sets `store: false` and requests
-strict structured output from the Responses API.
+strict structured output from the Responses API. Monitor test usage in the
+OpenAI dashboard and rotate or revoke the temporary key after the event if it
+is no longer needed.
 
 ## Verify
 
@@ -44,11 +56,15 @@ pnpm run test
 
 | Technical layer | What it means |
 |---|---|
-| `lib/passages.ts` | The small public shelf: exact texts, citations, rights, and expected labels |
-| `lib/query-plan.ts` | The documented example and the shape of a librarian’s answer |
-| `app/api/query/route.ts` | The locked reading-room desk: GPT-5.6 may judge supplied records but cannot add books |
-| `app/research-workbench.tsx` | The scholar’s workspace: question, concept map, language plans, sources, and corrections |
+| `lib/passages.ts` | The regression packet: exact texts, citations, rights, and expected labels; not the live search shelf |
+| `lib/query-plan.ts` | The topic-general concept-family, scope, exclusion, and workspace contract |
+| `app/api/query/route.ts` | The fox’s desk: GPT-5.6 builds and revises the English-level map without pretending a corpus search has run |
+| `app/research-workbench.tsx` | One shared room: continuous fox conversation, concept worktable, pins, set-aside memory, and restoration |
 | `app/globals.css` | The visual system for the warm paper-and-ink reading room |
+
+Dynamic micro-corpus retrieval and language-specialist adaptation remain the
+next implementation layer. The three-passage Number Rants packet is retained
+for regression and negative-control testing only.
 
 ## Rights
 
