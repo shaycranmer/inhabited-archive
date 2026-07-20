@@ -8,15 +8,24 @@ from datetime import datetime, timezone
 import json
 from pathlib import Path
 import re
+import subprocess
 
 
-ALLOWED_INDEX_FILE = Path(
-    "sources/indexes/acquisition_wave_2026-07-14/README.md"
-)
+ALLOWED_INDEX_FILES = {
+    Path("sources/indexes/acquisition_wave_2026-07-14/README.md"),
+    Path("sources/indexes/demo_latin_30.csv"),
+}
 EXCLUDED_PARTS = {
     ".git",
+    ".next",
+    ".vinext",
     ".venv",
+    ".wrangler",
+    "dist",
+    "node_modules",
+    "outputs",
     "venv",
+    "work",
     "__pycache__",
     ".pytest_cache",
     ".mypy_cache",
@@ -62,13 +71,44 @@ def publication_candidate(project: Path, path: Path) -> bool:
         return False
     if relative.parts and relative.parts[0] == "derived":
         return False
-    if relative.parts[:2] == ("sources", "indexes") and relative != ALLOWED_INDEX_FILE:
+    if (
+        relative.parts[:2] == ("sources", "indexes")
+        and relative not in ALLOWED_INDEX_FILES
+    ):
         return False
     if path.suffix.lower() in EXCLUDED_SUFFIXES:
         return False
-    if path.name.startswith(".env") or path.name == ".DS_Store":
+    if (
+        path.name.startswith(".env") and path.name != ".env.example"
+    ) or path.name == ".DS_Store":
         return False
     return True
+
+
+def repository_files(project: Path) -> list[Path]:
+    """Return tracked and untracked files, honoring every repository ignore rule."""
+
+    completed = subprocess.run(
+        [
+            "git",
+            "-C",
+            str(project),
+            "ls-files",
+            "--cached",
+            "--others",
+            "--exclude-standard",
+            "-z",
+        ],
+        check=False,
+        capture_output=True,
+    )
+    if completed.returncode == 0:
+        return [
+            project / Path(item.decode("utf-8", errors="surrogateescape"))
+            for item in completed.stdout.split(b"\0")
+            if item
+        ]
+    return [path for path in project.rglob("*") if path.is_file()]
 
 
 def main() -> int:
@@ -83,7 +123,7 @@ def main() -> int:
     project = args.project.resolve()
     candidates = [
         path
-        for path in project.rglob("*")
+        for path in repository_files(project)
         if path.is_file() and publication_candidate(project, path)
     ]
     candidates.sort()

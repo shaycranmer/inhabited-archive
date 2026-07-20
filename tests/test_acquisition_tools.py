@@ -12,6 +12,7 @@ sys.path.insert(0, str(TOOLS))
 
 import acquire_sefaria_json as sefaria  # noqa: E402
 import acquire_verified_zip as archive  # noqa: E402
+import audit_publication_surface as publication  # noqa: E402
 import finalize_openiti_acquisition as openiti  # noqa: E402
 
 
@@ -97,6 +98,34 @@ class OpenITISchemaTests(unittest.TestCase):
             connection.close()
         self.assertIn("openiti_versions", tables)
         self.assertIn("openiti_segment_locators", tables)
+
+
+class PublicationSurfaceTests(unittest.TestCase):
+    def test_public_demo_manifest_and_env_example_are_audited(self) -> None:
+        project = Path("/project")
+        self.assertTrue(
+            publication.publication_candidate(
+                project, project / "sources/indexes/demo_latin_30.csv"
+            )
+        )
+        self.assertTrue(
+            publication.publication_candidate(
+                project, project / "explorer/.env.example"
+            )
+        )
+
+    def test_private_env_and_ignored_build_tree_are_excluded(self) -> None:
+        project = Path("/project")
+        self.assertFalse(
+            publication.publication_candidate(
+                project, project / "explorer/.env.local"
+            )
+        )
+        self.assertFalse(
+            publication.publication_candidate(
+                project, project / "explorer/node_modules/package/index.js"
+            )
+        )
 
 
 if __name__ == "__main__":
