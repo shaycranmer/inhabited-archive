@@ -75,7 +75,7 @@ export const passages: Passage[] = [
     translation: "Marcus has six donkeys in the field.",
     translationCredit: "Number Rants project",
     sourceUrl:
-      "https://github.com/shaycranmer/number-rants-explorer",
+      "https://github.com/shaycranmer/inhabited-archive",
     sourceLabel: "Synthetic evaluation sentence",
     rights: "CC0 1.0",
     expectedLabel: "incidental_quantity",

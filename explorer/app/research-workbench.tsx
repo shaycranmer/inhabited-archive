@@ -1424,7 +1424,7 @@ export function ResearchWorkbench() {
       <footer>
         <div className="brand footer-brand"><span className="brand-mark">IA</span><span><strong>The Inhabited Archive</strong><small>Built by Shay Cranmer + Avery</small></span></div>
         <p>Code: MIT · Project documentation: CC BY 4.0 · Source rights travel with every record.</p>
-        <a href="https://github.com/shaycranmer/number-rants-explorer" target="_blank" rel="noreferrer">View the method on GitHub ↗</a>
+        <a href="https://github.com/shaycranmer/inhabited-archive" target="_blank" rel="noreferrer">View the method on GitHub ↗</a>
       </footer>
     </main>
   );

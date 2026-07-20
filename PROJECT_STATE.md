@@ -45,14 +45,15 @@ Historical logs may retain absolute paths as provenance. Use
 
 - A publication-safe README, `.gitignore`, rights boundary, requirements file,
   regression tests, and publication auditor now exist.
-- A local Git repository now has two deliberate baseline commits: the Build
-  Week inheritance boundary and the code/documentation/data licensing layer.
-- A public GitHub repository named `shaycranmer/number-rants-explorer` exists
-  but is still empty; the local repository has no remote configured.
-- The Build Week Explorer is an uncommitted working tree under `explorer/`.
-  It compiles and its current lint, build, rendered-page, and provenance tests
-  pass, but its interface is undergoing deliberate co-design with Shay before
-  any commit, push, or deployment.
+- A deliberate local Git history records the Build Week inheritance boundary,
+  licensing layer, co-designed artwork, live fox worktable, Latin retrieval
+  floor, living project state, and Latin adaptation method as separate
+  checkpoints.
+- The public GitHub repository is named `shaycranmer/inhabited-archive` and is
+  the publication target for this history.
+- The Build Week Explorer under `explorer/` is committed locally. It compiles,
+  and its current lint, build, rendered-page, and provenance tests pass.
+  Pushes and deployments remain separately authorized publication actions.
 - The project code license is MIT, and original project documentation is CC BY
   4.0 except where otherwise noted. `DATA_LICENSES.md` explicitly keeps
   third-party corpora, editions, translations, and records outside those
