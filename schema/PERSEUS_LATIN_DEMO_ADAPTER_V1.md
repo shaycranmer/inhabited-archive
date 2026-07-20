@@ -52,6 +52,12 @@ separate so a future second edition can be related without being collapsed.
 belong in every corpus: shelf order, basket, work and edition URNs, repository,
 pinned commit, SPDX license expression, and the rights-review receipt.
 
+When Git verification is enabled, the builder now requires both the exact
+pinned commit and a completely clean source checkout. A tracked modification
+or untracked file stops the build before any XML is read. Publication date and
+publisher metadata are scoped to TEI `publicationStmt`; a revision-history
+date can no longer be mistaken for an edition publication date.
+
 ## Passage Policy
 
 The adapter reuses the tested canonical TEI extraction policy:
@@ -75,7 +81,8 @@ locus such as `Book One > 1` rather than the edition URN repeated as a heading.
 
 ## Verified Build Receipt
 
-The full build on 2026-07-19 produced:
+The full build on 2026-07-19, repeated after the
+`perseus-latin-demo-normalizer-v2` metadata-scope correction, produced:
 
 - 30 documents;
 - 61,651 passages;
@@ -86,6 +93,8 @@ The full build on 2026-07-19 produced:
 - 30 document-search rows and 61,651 passage-search rows;
 - zero orphan document or passage records;
 - SQLite integrity result `ok`;
+- final SQLite journal mode `delete`, so the packaged database opens read-only
+  without WAL sidecar files;
 - 97,337,344 database bytes;
 - approximately 23,734,650 bytes when gzip-compressed;
 - canonical content SHA-256
@@ -110,6 +119,7 @@ Search literal Latin terms without an API key:
 python3 tools/search_demo_latin_corpus.py somnium --limit 5
 python3 tools/search_demo_latin_corpus.py "domus patria" --mode any --limit 5
 python3 tools/search_demo_latin_corpus.py memoria --json --context 1
+python3 tools/search_demo_latin_corpus.py domus --preview --sample-limit 3
 ```
 
 Each result includes its document and segment IDs, author, work, readable
@@ -123,15 +133,27 @@ no hit. The latter is not proof that the concepts are absent. It demonstrates
 why the inspectable Latin specialist must add lemmas, inflected forms,
 orthographic variants, semantic relations, and uncertainty before retrieval.
 
+Literal queries now expand mechanically across every *u/v* and *i/j*
+combination and match case-insensitively, so `uita` can retrieve source text
+printed as `vita` without changing the displayed source. The current floor
+does not fold *ae/e* or *oe/e*, strip diacritics, split enclitics, or lemmatize.
+Raw `--fts-query` mode deliberately bypasses this safety expansion.
+
+Preview mode counts the matches for one proposed term and returns examples
+from different works in declared shelf order where possible. These examples
+are diagnostic rather than relevance-ranked. A verified `domus` preview found
+295 passages across 24 works; a nonsense-token preview returned zero with an
+explicit reminder that shelf absence is not historical absence.
+
 ## Current Boundary
 
-The database and command-line diagnostic are real. They are not yet connected
-to the Explorer, the badger interface, an OpenAI call, or owl adjudication.
-The current Cloudflare-oriented Explorer cannot be assumed to open a local
-SQLite file directly; the application integration boundary must be designed
-explicitly rather than hidden inside this adapter.
+The database, command-line diagnostic, live badger route, folio interface, and
+local D1 diagnostic bridge are real. The Explorer does not open this SQLite
+file: `tools/export_demo_latin_d1.py` projects its serving columns into a D1
+import carrying the same source commit and canonical content hash. The public
+D1 database is not yet loaded, and owl adjudication remains unbuilt.
 
-When Rowan's Latin packet returns, the next layer should define an inspectable
-language-adaptation contract and send its approved lexical plan into this
-retrieval floor. The UI should consume provenance-locked candidate records,
-not raw model recollections of Latin texts.
+The inspectable language-adaptation and preview contracts are defined in
+`schema/BADGER_ADAPTATION_CONTRACT_V1.md`. The folio's diagnostic term-test
+control now consumes provenance-locked D1 records rather than model
+recollections. The next layer sends only approved guidance into full search.

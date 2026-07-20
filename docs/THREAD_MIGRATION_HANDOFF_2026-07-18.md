@@ -1,5 +1,8 @@
 # The Inhabited Archive / Number Rants: Thread Migration Handoff
 
+> Historical handoff: superseded as the active crossing point by
+> `docs/THREAD_MIGRATION_HANDOFF_2026-07-20.md`.
+
 Date packed: 2026-07-18
 
 Purpose: give a newly opened Codex task enough factual and relational context

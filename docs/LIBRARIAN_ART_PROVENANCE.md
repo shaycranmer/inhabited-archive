@@ -265,6 +265,88 @@ live interface rather than baked into the art.
 > cards, human fingers, human thumb, primate hand anatomy, cute mascot paw,
 > oversized paw, or full fox.
 
+## Latin Badger Folio Room
+
+- Project asset: `explorer/public/art/latin-badger-folio-room-v1.png`
+- Generation tool: built-in `image_gen.imagegen`
+- Generation type: new image using the approved panorama as a style and
+  character-continuity reference
+- Generation date: 2026-07-19
+- Number of generations: one
+- Edit passes: none
+- Dimensions: 1823 x 863 pixels
+- Aspect ratio: approximately 2.11:1
+- SHA-256:
+  `bab6b15b82e595942b63727318d4e94459049447252b1a43df8713dfedb69a7a`
+- Status: integrated as the upper backing layer for the Latin badger's
+  inspectable folio room
+
+This scene deliberately moves the badger to the upper-left and behind the
+interface. Manuscripts and marginal marks trail into the room, while the
+lower and right fields dissolve into quiet parchment so real folios can grow
+without acquiring a false illustrated boundary.
+
+### Exact Latin Badger Folio Room Prompt
+
+> **Use case:** stylized-concept
+>
+> **Asset type:** wide background illustration for the Latin badger folio room
+> in an adult scholarly digital-humanities website
+>
+> **Input image:** Image 1 is the approved visual north star and
+> character-continuity reference. Preserve its refined engraved hand, warm
+> parchment, restrained historical pigments, adult badger identity, line
+> density, and inhabited-manuscript-margin quality. Redesign the composition
+> completely; do not reproduce the panorama layout.
+>
+> **Primary request:** Create a dedicated scene for the badger corpus walker
+> after the fox has handed over an approved concept map. The same stocky,
+> naturalistic adult badger scholar appears high at the upper-left and partly
+> cropped by the top and left page edges, leaning down into the work with
+> absorbed concentration. The badger is slightly behind the scholarly
+> materials rather than posed beside an interface: one compact quadrupedal paw
+> steadies an open folio while the other guides a small magnifying lens across
+> several overlapping manuscript leaves and index slips. The badger never
+> looks at the viewer.
+>
+> **Scene/backdrop:** warm sandy parchment merging into a lightly indicated
+> archival desk. Loose folio leaves, two or three open codices, a rolled text,
+> pins, fine rules, and restrained variant-mark marginalia trail from the
+> badger across the upper edge, then dissolve into quiet parchment. Tiny
+> touches of lapis navy and deep teal should be a little more present than in
+> the fox room, because the multilingual archive is now actively adapting the
+> question, but remain spot pigments only.
+>
+> **Composition/framing:** wide panoramic website background, approximately
+> 2:1. Badger and densest bookwork occupy the upper-left 30 to 35 percent. Keep
+> at least 60 percent of the center, lower-middle, and right side calm, pale,
+> low-contrast, and interface-safe for real HTML headings, loading notices,
+> and stacked expandable folios. Let a few manuscript edges and marginal marks
+> pass behind that future content without forming boxes or fake panels. The
+> upper and side edges may be richly inhabited; the lower field should fade
+> naturally into parchment with no hard boundary line.
+>
+> **Style/medium:** refined pen-and-ink engraving mixed with medieval
+> marginalia and early printed-book illustration; finely crosshatched; adult,
+> scholarly, historically strange, intelligent, tactile, and slightly
+> whimsical. At least 80 percent monochrome black-brown linework. The world
+> does not become crowded; it becomes inhabited. Competent, slightly strange
+> manuscript creature, never an adorable app mascot.
+>
+> **Mood:** patient, tenacious textual scrutiny; quiet magic; archival
+> pleasure; mildly obsessive competence.
+>
+> **Constraints:** same adult badger corpus-walker identity as the reference;
+> stocky naturalistic proportions; small eyes; species-correct paws with no
+> human fingers or opposable thumbs; plain heavy draped cowl without
+> culture-specific costume; identity comes from collating word forms and
+> manuscripts. No fox, no owl, no other animal. No legible or fake text,
+> labels, logos, watermark, speech bubbles, rendered cards, interface controls,
+> bordered UI panels, rounded app frames, black portal bands,
+> culture-to-animal mapping, wizard costume, fantasy tavern, bright full color,
+> photorealism, cute mascot proportions, oversized head, giant eyes, human
+> smile, or performance toward the viewer.
+
 ## Reference Image
 
 The generation used an earlier 1250 × 848 fox/badger/owl composition as a

@@ -209,11 +209,14 @@ away.
 
 The shelf makes this concrete: its 30 files come from editions digitized at
 different times under different conventions (edition identifiers range from
-`perseus-lat1` to `perseus-lat5` plus one `opp-lat1`). The plan must state
-the normalization applied at indexing time (at minimum u→v-insensitive and
-i→j-insensitive matching, case-folding, and ae/oe awareness) and must not
-claim orthographic exhaustiveness beyond what the index actually
-normalizes.
+`perseus-lat1` to `perseus-lat5` plus one `opp-lat1`). The implemented first
+retrieval floor preserves source spelling in the index and expands every
+literal query mechanically across all *u/v* and *i/j* combinations; SQLite
+FTS5 matching is case-insensitive. It does **not** yet fold *ae/e* or *oe/e*,
+strip diacritics, split enclitics, or lemmatize. Those variants therefore
+remain the badger's explicit responsibility and must stay visible in the
+folio. The plan must state this exact normalization boundary and must not claim
+orthographic exhaustiveness beyond it.
 
 ## 6. Enclitics and tokenization
 

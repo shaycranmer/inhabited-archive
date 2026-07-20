@@ -227,8 +227,8 @@ never inferred from card position, and the fox need not connect every card.
 The scholar may edit, pin, add, or remove a relationship string. The table ends
 with a clear scholar approval action and an equally visible route to keep
 working with the fox.
-Approval currently stops honestly at the unbuilt language-specialist handoff;
-it does not pretend that retrieval has run.
+Approval now enters the live Latin folio desk and stops honestly after
+inspectable language adaptation; it does not pretend that retrieval has run.
 
 The system should not require the scholar to approve every reasonable card
 individually. The scholar edits what matters, then approves the map as a whole.
@@ -440,8 +440,8 @@ declared genre/domain baskets and was selected before the eventual video
 question. See `docs/DEMO_LATIN_CORPUS.md` and
 `sources/indexes/demo_latin_30.csv`. The local manifest-driven SQLite corpus
 index and diagnostic lexical search are now built and verified. They are not
-yet connected to the Explorer; the visual language-specialist handoff remains
-unbuilt.
+yet connected to the Explorer; the visual language-specialist handoff is now
+implemented separately from that retrieval bridge.
 
 ## Still Open
 
@@ -452,16 +452,40 @@ phone layouts. The table composition has passed a first browser inspection at
 the compact in-app width but remains a co-design prototype awaiting Shay's
 review rather than an approved finished layout.
 
-The next build boundary is the fox-to-language-specialist handoff and the
-approval semantics that govern it. Still-open decisions include the fox's full
-one-to-three-question clarification rhythm, corpus-coverage bridge behavior,
-language-specialist presentation, final query approval,
+The next build boundary is the deployable corpus-preview seam and the approval
+semantics that govern entry into retrieval. Still-open decisions include the
+fox's full one-to-three-question clarification rhythm, corpus-coverage bridge
+behavior, final query approval,
 retrieval integration, owl adjudication details, character micro-behaviors,
 animation restraint, further responsive crop refinement, and the video path.
 
-The first settled handoff principle is that language and corpus adaptations
-must be inspectable before retrieval. The scholar should be able to see how an
-English-level concept became language-specific lexical, morphological,
-semantic, proximity, and exclusion guidance, including uncertainty and known
-false positives. The exact visual schema and approval controls remain to be
-co-designed before implementation.
+Language and corpus adaptations must be inspectable before retrieval. Each fox
+concept family becomes one collapsed badger folio rather than an explosion of
+top-level cards. Opening the folio exposes individually editable, pinnable, and
+deactivatable lexical, morphological, historical-semantic, conceptual,
+exclusion, and uncertainty proposals. The collapsed state summarizes direct
+and exploratory counts, scope, highest risk, confidence, edit/approval state,
+and how many proposals have been previewed.
+
+Every searchable proposal may offer an on-demand **Test this term on the
+shelf** control. It reports actual match and work counts plus a few raw,
+citable contexts from different works where possible. It is a catalogue check,
+not owl adjudication: it does not rank relevance, approve or mutate the plan,
+or turn zero shelf hits into a claim of historical absence. Verification
+language must distinguish packet-guided model proposal, corpus attestation,
+and genuine external lexical verification. The underlying v1 contract and
+local deterministic preview are implemented. The live Latin route now also
+enforces explicit fox-table approval, exact source-card identity, and
+application-owned verification labels. Three unrelated live plans initially
+took about two minutes apiece and returned roughly 13–18 proposals across two
+families; a later full folio handoff took closer to five minutes, so the badger
+room needs an honest waiting state and must make collapsed folios
+the default. That first composition is now implemented: a quiet Latin desk,
+an honest rotating wait notice, compact folio covers, in-place expansion,
+recoverable proposal set-aside, proposal editing and pins, and per-folio
+approval. Approved folios recollapse and clearly offer reopening for
+inspection. Dedicated badger art now enters from the upper-left behind the
+room, and the fox worktable art fades into uninterrupted parchment rather than
+ending at a hard illustrated boundary. It is a co-design implementation
+awaiting browser review rather than a frozen finished room. The deployed
+runtime bridge remains open.

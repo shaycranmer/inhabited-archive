@@ -9,7 +9,10 @@
     "dev": "WRANGLER_LOG_PATH=.wrangler/wrangler.log vinext dev",
     "build": "WRANGLER_LOG_PATH=.wrangler/wrangler.log vinext build",
     "start": "WRANGLER_LOG_PATH=.wrangler/wrangler.log vinext start",
-    "test": "pnpm run build && node --test tests/rendered-html.test.mjs",
+    "test": "pnpm run build && node --test tests/*.test.mjs",
+    "eval:badger": "node scripts/run-badger-evals.mjs",
+    "shelf:export": "python3 ../tools/export_demo_latin_d1.py",
+    "shelf:import-local": "WRANGLER_LOG_PATH=.wrangler/wrangler.log wrangler d1 execute site-creator-d1 --local --config wrangler.local.jsonc --file=../derived/demo_latin/perseus_latin_demo_v1.d1.sql",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next"
   },
   "dependencies": {

@@ -86,6 +86,42 @@ context. This proves corpus ingestion and lexical retrieval only. The index is
 not yet connected to the Explorer, and literal search is not being presented
 as the finished language-specialist method.
 
+The first badger contract is now implemented beneath the interface. One
+collapsed folio contains the language adaptation for one fox concept family,
+while its lexical, morphological, historical, associative, exclusion, and
+uncertainty proposals remain individually inspectable. A proposal can be
+tested against the shelf on demand: the deterministic check reports occurrence
+counts and raw citable examples without treating them as relevance judgments.
+The live Latin badger route is now implemented. It accepts only an explicitly
+approved fox table, uses Rowan's method packet under a strict JSON schema, and
+returns exactly one draft folio for each source concept family. Application
+code refuses invented source cards and prevents the model from claiming corpus
+or dictionary verification. Live topic-general trials on dreams, political
+friendship, and weather all produced complete inspectable plans. The visual
+folio room is now wired to fox-table approval: folios are collapsed by
+default, expand into editable and pinnable proposals, preserve uncertainty as
+disclosure, support recoverable set-aside, and require separate per-folio
+approval. The local D1 diagnostic bridge now exists; loading and verifying its
+public database, approved-plan execution, and owl adjudication remain unbuilt.
+
+The badger handoff now uses a resumable background response with short polling
+requests rather than one fragile multi-minute HTTP connection. The interface
+keeps the approved fox table fixed while showing queued and in-progress states.
+Paid badger starts and non-generating receipt checks use separate application
+routes so public request limits can protect the wallet without interrupting a
+legitimate long folio build.
+Background polling entails roughly ten minutes of temporary OpenAI response
+retention even with `store: false`; this is an explicit operational boundary.
+
+Each searchable badger proposal can now run a separately labeled literal shelf
+check against a D1 serving projection of the thirty-work Latin corpus. The
+preview reports passage/work counts, distribution across the five declared
+baskets, raw examples from distinct works where possible, source links and
+hashes, plus the index's orthographic limitations. It does not approve the
+proposal, rank relevance, execute the full plan, or perform owl adjudication.
+The local D1 import is reproducibly generated from the verified SQLite build
+and must carry matching source-commit and content-hash receipts.
+
 ## First regression packet
 
 - Nicomachus of Gerasa, *Introduction to Arithmetic* 1.16 — strong match;
@@ -103,6 +139,8 @@ the main product demonstration.
 - The app works without private corpus files or an API key.
 - A developer can add an API key and ask a question not anticipated by the
   demo script.
+- A public deployment cannot spend project-owned AI tokens until the separate
+  Cloudflare abuse-protection gate has been configured and verified.
 - A configured installation performs real structured-output calls and searches
   a compact, publication-safe local corpus index.
 - Every displayed passage retains source location and rights.

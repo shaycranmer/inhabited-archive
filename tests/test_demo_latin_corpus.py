@@ -3,6 +3,7 @@
 import csv
 import hashlib
 import sqlite3
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -22,7 +23,8 @@ TEI = "http://www.tei-c.org/ns/1.0"
 
 def source_xml(edition_urn: str, title: str, text: str) -> str:
     return f"""<TEI xmlns="{TEI}" xml:lang="lat">
-    <teiHeader><fileDesc><titleStmt><title>{title}</title><author>Tester</author></titleStmt>
+    <teiHeader><revisionDesc><change><date>2026-07-19</date>Fixture revision</change></revisionDesc>
+    <fileDesc><titleStmt><title>{title}</title><author>Tester</author></titleStmt>
     <publicationStmt><publisher>Test Press</publisher><date>1900</date></publicationStmt>
     <sourceDesc><bibl>Test public-domain edition</bibl></sourceDesc></fileDesc></teiHeader>
     <text xml:lang="lat"><body><div type="edition" n="{edition_urn}">
@@ -51,7 +53,7 @@ class DemoLatinCorpusTests(unittest.TestCase):
             source_xml(
                 "urn:cts:latinLit:b.w2.demo-lat1",
                 "Second Work",
-                "Domus viatoris procul posita desiderium patriae excitat. "
+                "Domus viatoris procul posita desiderium patriae excitat. Vita brevis est. "
                 "Epistulae absentium memoriam amicorum cotidie conservant.",
             ),
             encoding="utf-8",
@@ -144,12 +146,26 @@ class DemoLatinCorpusTests(unittest.TestCase):
             self.assertEqual(before, after)
             self.assertEqual(summary["database_counts"]["documents"], 2)
             self.assertEqual(summary["sqlite_integrity_check"], "ok")
+            self.assertEqual(summary["sqlite_journal_mode"], "delete")
+
+            read_only = sqlite3.connect(f"file:{root / 'demo.sqlite3'}?mode=ro", uri=True)
+            try:
+                self.assertEqual(
+                    read_only.execute("PRAGMA integrity_check").fetchone()[0],
+                    "ok",
+                )
+                self.assertEqual(
+                    read_only.execute("SELECT COUNT(*) FROM segments").fetchone()[0],
+                    2,
+                )
+            finally:
+                read_only.close()
 
             connection = sqlite3.connect(root / "demo.sqlite3")
             try:
                 results = searcher.search_database(connection, '"somnia"', limit=5)
                 document = connection.execute(
-                    """SELECT d.source_sha256, p.work_urn, p.edition_urn
+                    """SELECT d.source_sha256, p.work_urn, p.edition_urn, d.publication_date
                        FROM documents d JOIN perseus_latin_documents p USING(document_id)
                        WHERE p.shelf_order = 1"""
                 ).fetchone()
@@ -161,6 +177,39 @@ class DemoLatinCorpusTests(unittest.TestCase):
             self.assertEqual(document[0], before)
             self.assertEqual(document[1], "urn:cts:latinLit:a.w1")
             self.assertEqual(document[2], "urn:cts:latinLit:a.w1.demo-lat1")
+            self.assertEqual(document[3], "1900")
+
+    def test_verified_build_rejects_a_dirty_pinned_checkout(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            manifest, repository = self.make_fixture(root)
+            subprocess.run(["git", "init", "-q", str(repository)], check=True)
+            subprocess.run(
+                ["git", "-C", str(repository), "config", "user.email", "fixture@example.test"],
+                check=True,
+            )
+            subprocess.run(
+                ["git", "-C", str(repository), "config", "user.name", "Fixture"],
+                check=True,
+            )
+            subprocess.run(["git", "-C", str(repository), "add", "."], check=True)
+            subprocess.run(
+                ["git", "-C", str(repository), "commit", "-q", "-m", "fixture"],
+                check=True,
+            )
+            records = builder.parse_manifest(manifest, expected_documents=2)
+            commit = builder.current_git_commit(repository)
+            for record in records:
+                record["source_commit"] = commit
+
+            self.assertEqual(
+                builder.verify_sources(records, root, repository, verify_git=True),
+                commit,
+            )
+            source = repository / "data/a/w1/a.w1.demo-lat1.xml"
+            source.write_text(source.read_text(encoding="utf-8") + "\n", encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "not clean"):
+                builder.verify_sources(records, root, repository, verify_git=True)
 
     def test_canonical_content_digest_is_reproducible(self) -> None:
         with tempfile.TemporaryDirectory() as first_temporary, tempfile.TemporaryDirectory() as second_temporary:
@@ -171,10 +220,85 @@ class DemoLatinCorpusTests(unittest.TestCase):
             )
 
     def test_literal_query_quotes_words_and_rejects_punctuation_only(self) -> None:
-        self.assertEqual(searcher.literal_fts_query("domus patria", "any"), '"domus" OR "patria"')
-        self.assertEqual(searcher.literal_fts_query("domus patria", "all"), '"domus" AND "patria"')
+        query_any = searcher.literal_fts_query("domus patria", "any")
+        query_all = searcher.literal_fts_query("domus patria", "all")
+        self.assertIn('"domus"', query_any)
+        self.assertIn('"domvs"', query_any)
+        self.assertIn('("patria" OR "patrja")', query_any)
+        self.assertIn(') AND ("patria" OR "patrja")', query_all)
         with self.assertRaises(ValueError):
             searcher.literal_fts_query("---", "any")
+
+    def test_literal_query_is_mechanically_uv_and_ij_insensitive(self) -> None:
+        self.assertEqual(
+            set(searcher.latin_orthographic_variants("vita")),
+            {"uita", "vita", "ujta", "vjta"},
+        )
+        self.assertEqual(
+            set(searcher.latin_orthographic_variants("iam")),
+            {"iam", "jam"},
+        )
+        with self.assertRaises(ValueError):
+            searcher.latin_orthographic_variants("i" * 7)
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            self.build_fixture(root, "orthography")
+            connection = sqlite3.connect(root / "orthography.sqlite3")
+            try:
+                results = searcher.search_database(
+                    connection,
+                    searcher.literal_fts_query("uita", "any"),
+                    limit=5,
+                )
+            finally:
+                connection.close()
+            self.assertEqual(len(results), 1)
+            self.assertIn("Vita brevis est", results[0]["text"])
+
+    def test_preview_counts_matches_and_samples_distinct_works(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            self.build_fixture(root, "preview")
+            connection = sqlite3.connect(root / "preview.sqlite3")
+            try:
+                preview = searcher.preview_database(
+                    connection, '"memoriam"', sample_limit=3
+                )
+                empty = searcher.preview_database(
+                    connection, '"nonexistentterm"', sample_limit=3
+                )
+            finally:
+                connection.close()
+
+            self.assertEqual(preview["status"], "matches_found")
+            self.assertEqual(preview["total_segment_matches"], 2)
+            self.assertEqual(preview["total_document_matches"], 2)
+            self.assertEqual(len(preview["samples"]), 2)
+            self.assertEqual(
+                len({sample["document_id"] for sample in preview["samples"]}), 2
+            )
+            self.assertTrue(
+                all(sample["source_sha256"] for sample in preview["samples"])
+            )
+            self.assertTrue(
+                all("⟦memoriam⟧" in sample["snippet"] for sample in preview["samples"])
+            )
+            self.assertIn("not relevance judgments", preview["notice"])
+            self.assertIn("u/v and i/j", preview["orthographic_matching"])
+            self.assertEqual(empty["status"], "no_matches")
+            self.assertEqual(empty["total_segment_matches"], 0)
+            self.assertEqual(empty["samples"], [])
+
+    def test_preview_rejects_unbounded_sample_requests(self) -> None:
+        connection = sqlite3.connect(":memory:")
+        try:
+            with self.assertRaises(ValueError):
+                searcher.preview_database(connection, '"domus"', sample_limit=0)
+            with self.assertRaises(ValueError):
+                searcher.preview_database(connection, '"domus"', sample_limit=11)
+        finally:
+            connection.close()
 
 
 if __name__ == "__main__":

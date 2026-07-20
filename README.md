@@ -108,10 +108,16 @@ The Project Day shelf now has its own manifest-driven search floor. Thirty
 complete Perseus Latin works normalize into 61,651 provenance-locked passages
 in a rebuildable SQLite FTS5 database. A developer can build it with
 `python3 tools/build_demo_latin_corpus.py` and inspect literal results with
-`python3 tools/search_demo_latin_corpus.py somnium`. See
-`schema/PERSEUS_LATIN_DEMO_ADAPTER_V1.md` for the technical and plain-language
-receipt. The index is real and locally verified but is not yet connected to
-the Explorer's badger handoff.
+`python3 tools/search_demo_latin_corpus.py somnium`. An individual badger
+proposal can receive a diagnostic shelf check with
+`python3 tools/search_demo_latin_corpus.py domus --preview --sample-limit 3`.
+See `schema/PERSEUS_LATIN_DEMO_ADAPTER_V1.md` and
+`schema/BADGER_ADAPTATION_CONTRACT_V1.md` for technical and plain-language
+receipts. The index and preview are real and locally verified. A reproducible
+D1 serving projection now connects individual badger proposals to the
+Explorer's diagnostic shelf check, while public D1 loading and full approved-
+plan retrieval remain open. The live Latin badger turns an approved fox table
+into strict, inspectable, still-unverified folios before those checks can run.
 
 ## Build Week Explorer
 

@@ -38,6 +38,7 @@ test("server-renders the research instrument", async () => {
   const css = await readFile(new URL("../app/globals.css", import.meta.url), "utf8");
   assert.match(css, /librarian-panorama-v1\.png/);
   assert.match(css, /fox-clarification-room-v1\.png/);
+  assert.match(css, /latin-badger-folio-room-v1\.png/);
 });
 
 test("locks every demo passage to provenance and rights", async () => {
@@ -69,7 +70,8 @@ test("keeps the live query contract topic-general", async () => {
   const client = await readFile(new URL("../app/research-workbench.tsx", import.meta.url), "utf8");
   assert.match(client, /Make focus/);
   assert.match(client, /keep the inquiry broad/i);
-  assert.match(client, /fox is inspecting his card catalogue/i);
+  assert.match(client, /listening for the shape of the question/i);
+  assert.match(client, /prewritten documentation, not a live model response/i);
   assert.match(client, /present map remains safe/i);
   assert.doesNotMatch(client, /OPENAI_API_KEY|NEXT_PUBLIC_OPENAI|VITE_OPENAI/);
 

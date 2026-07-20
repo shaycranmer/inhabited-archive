@@ -4,6 +4,12 @@ import {
   type ModelWorkspace,
   type QueryWorkspace,
 } from "../../../lib/query-plan";
+import {
+  cleanQuestion,
+  extractModelContent,
+  protectAiRequest,
+  QUERY_MAX_OUTPUT_TOKENS,
+} from "../../../lib/server/openai-route";
 
 export const runtime = "edge";
 
@@ -116,38 +122,6 @@ type RequestBody = {
   setAsideLabels?: unknown;
 };
 
-function extractModelContent(response: Record<string, unknown>) {
-  const output = response.output;
-  if (!Array.isArray(output)) return { text: null, refusal: null };
-
-  for (const item of output) {
-    if (!item || typeof item !== "object") continue;
-    const content = (item as { content?: unknown }).content;
-    if (!Array.isArray(content)) continue;
-    for (const part of content) {
-      if (!part || typeof part !== "object") continue;
-      if (
-        (part as { type?: unknown }).type === "output_text" &&
-        typeof (part as { text?: unknown }).text === "string"
-      ) {
-        return { text: (part as { text: string }).text, refusal: null };
-      }
-      if (
-        (part as { type?: unknown }).type === "refusal" &&
-        typeof (part as { refusal?: unknown }).refusal === "string"
-      ) {
-        return { text: null, refusal: (part as { refusal: string }).refusal };
-      }
-    }
-  }
-
-  return { text: null, refusal: null };
-}
-
-function cleanQuestion(value: unknown) {
-  return typeof value === "string" ? value.trim().slice(0, 1200) : "";
-}
-
 function cleanMessage(value: unknown) {
   return typeof value === "string" ? value.trim().slice(0, 1200) : "";
 }
@@ -185,6 +159,14 @@ function cleanConversation(value: unknown): ConversationTurn[] {
 }
 
 export async function POST(request: Request) {
+  const protection = protectAiRequest(request);
+  if (!protection.allowed) {
+    return NextResponse.json(
+      { error: protection.error, code: protection.code },
+      { status: protection.status },
+    );
+  }
+
   let body: RequestBody;
   try {
     body = (await request.json()) as RequestBody;
@@ -266,6 +248,7 @@ Treat modern psychological, medical, or diagnostic labels as research hypotheses
       body: JSON.stringify({
         model: MODEL,
         store: false,
+        max_output_tokens: QUERY_MAX_OUTPUT_TOKENS,
         instructions,
         input,
         text: {

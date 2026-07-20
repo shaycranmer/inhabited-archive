@@ -40,10 +40,40 @@ values to browser code. The repository ignores `.env.local`, while the empty
 `.env.example` remains safe to publish. Restart the local development server
 after adding the key.
 
-The key stays server-side. The live endpoint sets `store: false` and requests
-strict structured output from the Responses API. Monitor test usage in the
-OpenAI dashboard and rotate or revoke the temporary key after the event if it
-is no longer needed.
+The key stays server-side. Both live routes set `store: false` and request
+strict structured output from the Responses API. The long-running badger route
+uses background mode and short polling requests so a several-minute folio build
+does not depend on one browser connection surviving. OpenAI temporarily retains
+that background response for roughly ten minutes so polling can work; it is not
+ordinary stored response history. See the official
+[background-mode guide](https://developers.openai.com/api/docs/guides/background).
+Monitor test usage in the OpenAI dashboard and rotate or revoke the temporary
+key after the event if it is no longer needed.
+
+## Load the local Latin shelf
+
+The repository does not track the 97 MB derived SQLite database or its 48 MB
+D1 import file. After the verified Latin database has been built, create the
+serving import and load it into the project-local D1 emulator:
+
+```bash
+pnpm run shelf:export
+pnpm run shelf:import-local
+```
+
+The export refuses to overwrite an existing artifact. Its import contains only
+the thirty-work demonstration shelf's serving projection and carries the pinned
+source commit plus canonical content hash. The app checks that receipt before
+running any preview. This is a reproducible local proof; a public D1 instance
+must be loaded and its receipt checked separately before deployment.
+
+Public live-AI deployment is fail-closed. Both spending routes require exact
+same-origin requests, the fox and badger have explicit output ceilings, and a
+production runtime refuses AI calls until an external Cloudflare rate limit or
+equivalent protection has been installed and acknowledged with
+`AI_RATE_LIMIT_CONFIGURED=true`. The flag is an interlock, not the protection
+itself. Follow `../docs/PUBLIC_AI_DEPLOYMENT_GATE.md` before enabling it. A public
+deployment without a project-owned API key does not need to enable the gate.
 
 ## Verify
 
@@ -59,12 +89,25 @@ pnpm run test
 | `lib/passages.ts` | The regression packet: exact texts, citations, rights, and expected labels; not the live search shelf |
 | `lib/query-plan.ts` | The topic-general concept-family, scope, exclusion, and workspace contract |
 | `app/api/query/route.ts` | The fox’s desk: GPT-5.6 builds and revises the English-level map without pretending a corpus search has run |
-| `app/research-workbench.tsx` | One shared room: continuous fox conversation, concept worktable, pins, set-aside memory, and restoration |
+| `lib/adaptation-plan.ts` | The badger folio contract, source-card reconciliation, and evidence-status boundary |
+| `app/api/adapt/route.ts` | Starts the Latin badger's GPT-5.6 adaptation of an approved fox table under Rowan's method packet and a strict schema |
+| `app/api/adapt/status/route.ts` | Checks the badger's background-job receipt without starting another paid generation |
+| `app/api/shelf-preview/route.ts` | Runs a literal, read-only diagnostic against the D1 Latin shelf and returns counts, basket distribution, distinct-work examples, and source receipts |
+| `db/schema.ts` | The intentionally small D1 serving schema; the full canonical SQLite builder remains authoritative |
+| `app/research-workbench.tsx` | The continuous fox room and concept table, plus the expandable Latin folio desk with proposal editing, pins, recoverable set-aside, and approval |
 | `app/globals.css` | The visual system for the warm paper-and-ink reading room |
 
-Dynamic micro-corpus retrieval and language-specialist adaptation remain the
-next implementation layer. The three-passage Number Rants packet is retained
-for regression and negative-control testing only.
+The live Latin adaptation route, visual folio room, and on-demand D1 diagnostic
+shelf preview are implemented. Full approved-plan retrieval remains the next
+runtime layer. The
+three-passage Number Rants packet is retained for regression and
+negative-control testing only.
+
+With the local server running, the versioned topic-general adaptation trials
+can be repeated with `pnpm run eval:badger`. Pass one fixture name—such as
+`pnpm run eval:badger friendship-and-betrayal`—to run a single case. These are
+live API evaluations and therefore use the configured key; their compact
+terminal output never prints the key.
 
 ## Rights
 

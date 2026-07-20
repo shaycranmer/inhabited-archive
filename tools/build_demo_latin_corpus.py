@@ -26,7 +26,7 @@ import normalize_corpus_corporum as tei
 
 
 SCHEMA_VERSION = "number-rants-canonical-v1"
-NORMALIZER_VERSION = "perseus-latin-demo-normalizer-v1"
+NORMALIZER_VERSION = "perseus-latin-demo-normalizer-v2"
 CORPUS_CODE = "perseus-latin-demo"
 COLLECTION_LABEL = "Inhabited Archive Perseus Latin 30"
 SOURCE_REPOSITORY = "PerseusDL/canonical-latinLit"
@@ -133,6 +133,16 @@ def current_git_commit(repository: Path) -> str:
     return result.stdout.strip()
 
 
+def git_worktree_status(repository: Path) -> str:
+    result = subprocess.run(
+        ["git", "-C", str(repository), "status", "--porcelain", "--untracked-files=all"],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    return result.stdout.strip()
+
+
 def verify_sources(
     records: list[dict[str, str]],
     project_root: Path,
@@ -148,6 +158,13 @@ def verify_sources(
         if actual_commit != expected_commit:
             raise ValueError(
                 f"Pinned source commit mismatch: manifest={expected_commit}, checkout={actual_commit}"
+            )
+        dirty_status = git_worktree_status(repository_root)
+        if dirty_status:
+            first_change = dirty_status.splitlines()[0]
+            raise ValueError(
+                "Pinned source checkout is not clean; rebuild only from the exact committed "
+                f"snapshot (first change: {first_change})"
             )
 
     for record in records:
@@ -394,8 +411,17 @@ def build_database(
                 )
 
             source_desc = first_metadata_text(root, "sourceDesc")[:8000]
-            publisher = first_metadata_text(root, "publisher")[:1000]
-            publication_date = first_metadata_text(root, "date")[:200]
+            publication_statement = first_element(root, "publicationStmt")
+            publisher = (
+                first_metadata_text(publication_statement, "publisher")[:1000]
+                if publication_statement is not None
+                else ""
+            )
+            publication_date = (
+                first_metadata_text(publication_statement, "date")[:200]
+                if publication_statement is not None
+                else ""
+            )
             estimated_words = sum(int(segment["token_count_approx"]) for segment in segments)
             rights_statement = (
                 "Perseus repository default: Creative Commons "
@@ -478,6 +504,9 @@ def build_database(
         connection.execute("INSERT INTO segment_search(segment_search) VALUES ('rebuild')")
         connection.commit()
         connection.execute("PRAGMA wal_checkpoint(TRUNCATE)")
+        journal_mode = connection.execute("PRAGMA journal_mode = DELETE").fetchone()[0]
+        if str(journal_mode).lower() != "delete":
+            raise RuntimeError(f"Portable database journal mode is {journal_mode!r}, not DELETE")
 
         database_counts = {
             "documents": connection.execute("SELECT COUNT(*) FROM documents").fetchone()[0],
@@ -535,6 +564,7 @@ def build_database(
             "coarse_fallback_threshold": coarse_fallback_threshold,
         },
         "sqlite_integrity_check": integrity,
+        "sqlite_journal_mode": "delete",
     }
     summary_path.write_text(
         json.dumps(summary, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"

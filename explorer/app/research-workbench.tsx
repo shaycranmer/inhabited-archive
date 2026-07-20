@@ -1,6 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import {
+  attachShelfPreview,
+  summarizeFolio,
+  type AdaptationProposal,
+  type BadgerAdaptationPlan,
+  type BadgerPendingResponse,
+  type BadgerResponse,
+  type ShelfPreview,
+} from "../lib/adaptation-plan";
+import type { ShelfPreviewResponse } from "../lib/shelf-preview";
 import {
   documentedQuestion,
   documentedWorkspace,
@@ -47,14 +57,15 @@ type BoundaryDraft = {
   rationale: string;
 };
 
-const initialWorkspace = documentedWorkspace();
+type ProposalDraft = {
+  proposalId: string;
+  latinExpression: string;
+  englishSense: string;
+  rationale: string;
+  searchForms: string;
+};
 
-const firstMapLoadingNotes = [
-  "One moment—the fox is inspecting his card catalogue.",
-  "He’s separating what to seek from where to seek it.",
-  "A few cards are arguing about where they belong.",
-  "He’s laying the first map on the table now.",
-];
+const initialWorkspace = documentedWorkspace();
 
 const revisionLoadingNotes = [
   "The fox is reconsidering the table. Nothing will move until his revision is ready.",
@@ -62,8 +73,33 @@ const revisionLoadingNotes = [
   "A little reshuffling. The present map remains safe until the new one is ready.",
 ];
 
-function FoxLoadingVignette({ kind, compact = false }: { kind: "first-map" | "revision"; compact?: boolean }) {
-  const notes = kind === "first-map" ? firstMapLoadingNotes : revisionLoadingNotes;
+const badgerLoadingNotes = [
+  "The badger is matching each fox card to a Latin folio.",
+  "He’s separating direct wording from historical associations.",
+  "A broad Latin word has just been asked to explain itself.",
+  "He’s listing the forms a literal catalogue might otherwise miss.",
+  "False positives are being written down before they can look impressive.",
+  "The source cards remain fixed while the folios take shape.",
+];
+
+const categoryLabels = {
+  lexical_translation: "Direct wording",
+  morphological_expansion: "Word-form expansion",
+  historical_semantic_expansion: "Historical meaning",
+  conceptual_association: "Exploratory association",
+  exclusion_rule: "Keep-out rule",
+  uncertainty: "Uncertainty",
+} as const;
+
+const effectLabels = {
+  include: "Include",
+  demote: "Use cautiously",
+  exclude: "Keep out when this pattern applies",
+  disclose_only: "Disclosure only",
+} as const;
+
+function FoxLoadingVignette({ compact = false }: { compact?: boolean }) {
+  const notes = revisionLoadingNotes;
   const [noteIndex, setNoteIndex] = useState(0);
 
   useEffect(() => {
@@ -71,7 +107,7 @@ function FoxLoadingVignette({ kind, compact = false }: { kind: "first-map" | "re
       setNoteIndex((current) => (current + 1) % notes.length);
     }, 2400);
     return () => window.clearInterval(timer);
-  }, [kind, notes.length]);
+  }, [notes.length]);
 
   return (
     <div className={`fox-loading-vignette ${compact ? "compact" : ""}`} role="status" aria-live="polite" aria-atomic="true">
@@ -82,10 +118,116 @@ function FoxLoadingVignette({ kind, compact = false }: { kind: "first-map" | "re
         <span className="catalogue-thread" />
       </div>
       <div>
-        <span>{kind === "first-map" ? "The catalogue stirs" : "The table stays put"}</span>
+        <span>The table stays put</span>
         <p key={noteIndex}>{notes[noteIndex]}</p>
       </div>
     </div>
+  );
+}
+
+function FoxThinkingTurn({ firstReply = false }: { firstReply?: boolean }) {
+  return (
+    <article className="fox-turn fox fox-thinking-turn" role="status" aria-live="polite">
+      <div className="fox-turn-meta"><strong>The fox</strong><span>Thinking with you</span></div>
+      <p>
+        {firstReply
+          ? "One moment. I’m listening for the shape of the question before we make any cards."
+          : "Let me think that through before I answer."}
+        <span className="thinking-dots" aria-hidden="true"><i /><i /><i /></span>
+      </p>
+    </article>
+  );
+}
+
+function BadgerLoadingVignette({ status }: { status: "starting" | "queued" | "in_progress" }) {
+  const [noteIndex, setNoteIndex] = useState(0);
+
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      setNoteIndex((current) => (current + 1) % badgerLoadingNotes.length);
+    }, 4200);
+    return () => window.clearInterval(timer);
+  }, []);
+
+  return (
+    <div className="badger-loading-vignette" role="status" aria-live="polite" aria-atomic="true">
+      <div className="folio-motion" aria-hidden="true">
+        <span className="folio-sheet folio-sheet-one" />
+        <span className="folio-sheet folio-sheet-two" />
+        <span className="folio-lens" />
+      </div>
+      <div>
+        <span>{status === "starting"
+          ? "The Latin desk is opening"
+          : status === "queued"
+            ? "The badger has your folios in the queue"
+            : "The Latin desk is working"}</span>
+        <p key={noteIndex}>{badgerLoadingNotes[noteIndex]}</p>
+        <small>
+          This can take several minutes. The app is checking back without holding one fragile
+          connection open, and your approved fox table will not change.
+        </small>
+      </div>
+    </div>
+  );
+}
+
+function ShelfPreviewResult({ preview }: { preview: ShelfPreview }) {
+  return (
+    <section className={`shelf-preview-result ${preview.status}`} aria-label="Diagnostic shelf preview">
+      <header>
+        <div>
+          <span>Literal shelf check · not an owl judgment</span>
+          <strong>
+            {preview.totalSegmentMatches.toLocaleString()} passages across{" "}
+            {preview.totalDocumentMatches.toLocaleString()} works
+          </strong>
+        </div>
+        <small>{preview.queryForms.join(" · ")}</small>
+      </header>
+
+      {preview.basketMatches?.length ? (
+        <div className="shelf-baskets" aria-label="Matches by shelf basket">
+          {preview.basketMatches.map((basket) => (
+            <span key={basket.basket}>
+              <b>{basket.segmentMatches.toLocaleString()}</b>{" "}
+              {basket.basket.replaceAll("_", " ")}
+            </span>
+          ))}
+        </div>
+      ) : null}
+
+      {preview.samples.length ? (
+        <div className="shelf-samples">
+          {preview.samples.map((sample) => (
+            <article key={sample.segmentId}>
+              <span>{sample.author} · {sample.workTitle} · {sample.citationLabel}</span>
+              <p>{sample.snippet}</p>
+              <div>
+                {sample.sourceUrl ? (
+                  <a href={sample.sourceUrl} target="_blank" rel="noreferrer">Inspect source ↗</a>
+                ) : null}
+                <small title={sample.sourceSha256}>Source receipt {sample.sourceSha256.slice(0, 12)}…</small>
+              </div>
+            </article>
+          ))}
+        </div>
+      ) : (
+        <p className="shelf-empty">No literal matches appeared on this selective shelf.</p>
+      )}
+
+      <details>
+        <summary>What this check can—and cannot—tell you</summary>
+        <p>{preview.notice}</p>
+        {preview.orthographicMatching ? <p>{preview.orthographicMatching}</p> : null}
+        {preview.shelfReceipt ? (
+          <p>
+            Shelf receipt: source commit {preview.shelfReceipt.sourceCommit.slice(0, 12)}… ·
+            content {preview.shelfReceipt.contentSha256.slice(0, 12)}…
+          </p>
+        ) : null}
+      </details>
+    </section>
   );
 }
 
@@ -278,7 +420,7 @@ export function ResearchWorkbench() {
   const [inquiryStarted, setInquiryStarted] = useState(false);
   const [tableVisible, setTableVisible] = useState(false);
   const [notice, setNotice] = useState(
-    "A documented, editable workspace is loaded. Add an API key to begin a different inquiry live.",
+    "The question below belongs to a saved, editable example. Open that example without an API call, or replace it and ask the live fox if this local copy has a key.",
   );
   const [focusedFamilyId, setFocusedFamilyId] = useState<string | null>(null);
   const [pile, setPile] = useState<SetAsideItem[]>([]);
@@ -305,6 +447,17 @@ export function ResearchWorkbench() {
   );
   const [draggingFamilyId, setDraggingFamilyId] = useState<string | null>(null);
   const [mapApproved, setMapApproved] = useState(false);
+  const [badgerPlan, setBadgerPlan] = useState<BadgerAdaptationPlan | null>(null);
+  const [badgerLoading, setBadgerLoading] = useState(false);
+  const [badgerJobStatus, setBadgerJobStatus] = useState<"starting" | "queued" | "in_progress">("starting");
+  const [badgerError, setBadgerError] = useState("");
+  const [expandedFolioIds, setExpandedFolioIds] = useState<string[]>([]);
+  const [proposalDraft, setProposalDraft] = useState<ProposalDraft | null>(null);
+  const [shelfPreviewLoadingId, setShelfPreviewLoadingId] = useState<string | null>(null);
+  const [shelfPreviewErrors, setShelfPreviewErrors] = useState<Record<string, string>>({});
+  const badgerAbortRef = useRef<AbortController | null>(null);
+
+  useEffect(() => () => badgerAbortRef.current?.abort(), []);
 
   function commit(
     nextWorkspace: QueryWorkspace,
@@ -312,6 +465,8 @@ export function ResearchWorkbench() {
     message: string,
     viewCardId?: string,
   ) {
+    badgerAbortRef.current?.abort();
+    badgerAbortRef.current = null;
     setReceipt({
       message,
       viewCardId,
@@ -321,6 +476,14 @@ export function ResearchWorkbench() {
     setWorkspace(nextWorkspace);
     setPile(nextPile);
     setMapApproved(false);
+    setBadgerPlan(null);
+    setBadgerLoading(false);
+    setBadgerJobStatus("starting");
+    setBadgerError("");
+    setExpandedFolioIds([]);
+    setProposalDraft(null);
+    setShelfPreviewLoadingId(null);
+    setShelfPreviewErrors({});
   }
 
   function undoReceipt() {
@@ -341,20 +504,29 @@ export function ResearchWorkbench() {
   async function beginInquiry(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!question.trim()) return;
+    const scholarTurn: ConversationTurn = {
+      id: makeId("turn"),
+      speaker: "scholar",
+      text: question.trim(),
+    };
+    setInquiryStarted(true);
+    setTableVisible(false);
+    setConversation([scholarTurn]);
     setLoadingTarget("question");
     setError("");
+    setNotice("The fox is listening. No concept table is visible yet.");
     try {
       const response = await fetch("/api/query", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "start", question }),
       });
-      const result = (await response.json()) as ExplorerResponse & { error?: string };
+      const result = (await response.json()) as ExplorerResponse & { error?: string; code?: string };
       if (!response.ok) throw new Error(result.error || "The fox could not begin the inquiry.");
       setWorkspace(result.workspace);
       setCardOrder(result.workspace.conceptFamilies.map((family) => family.id));
       setConversation([
-        { id: makeId("turn"), speaker: "scholar", text: question.trim() },
+        scholarTurn,
         { id: makeId("turn"), speaker: "fox", text: describeFox(result.workspace) },
       ]);
       setMode("live");
@@ -364,8 +536,14 @@ export function ResearchWorkbench() {
       setReceipt(null);
       setFocusedFamilyId(null);
       setMapApproved(false);
+      setBadgerPlan(null);
+      setBadgerError("");
+      setExpandedFolioIds([]);
+      setShelfPreviewLoadingId(null);
+      setShelfPreviewErrors({});
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "The fox could not begin the inquiry.");
+      setNotice("The live inquiry did not begin. You can return to the question or open the clearly labeled saved example.");
     } finally {
       setLoadingTarget(null);
     }
@@ -417,6 +595,11 @@ export function ResearchWorkbench() {
       setInquiryStarted(true);
       setNotice(result.notice);
       setMapApproved(false);
+      setBadgerPlan(null);
+      setBadgerError("");
+      setExpandedFolioIds([]);
+      setShelfPreviewLoadingId(null);
+      setShelfPreviewErrors({});
       setConversation([
         ...nextConversation,
         {
@@ -817,7 +1000,28 @@ export function ResearchWorkbench() {
   }
 
   function openDocumentedConversation() {
+    badgerAbortRef.current?.abort();
+    badgerAbortRef.current = null;
+    const exampleWorkspace = documentedWorkspace();
+    setQuestion(documentedQuestion);
+    setWorkspace(exampleWorkspace);
+    setCardOrder(exampleWorkspace.conceptFamilies.map((family) => family.id));
+    setConversation(initialConversation());
+    setMode("demo");
     setInquiryStarted(true);
+    setTableVisible(false);
+    setNotice("Saved example: this conversation and its editable worktable are prewritten documentation, not a live model response.");
+    setPile([]);
+    setReceipt(null);
+    setFocusedFamilyId(null);
+    setMapApproved(false);
+    setBadgerPlan(null);
+    setBadgerLoading(false);
+    setBadgerJobStatus("starting");
+    setBadgerError("");
+    setExpandedFolioIds([]);
+    setShelfPreviewLoadingId(null);
+    setShelfPreviewErrors({});
     setError("");
     requestAnimationFrame(() => {
       document.getElementById("fox-conversation")?.focus();
@@ -867,11 +1071,207 @@ export function ResearchWorkbench() {
     document.getElementById("table-fox-follow-up")?.focus();
   }
 
-  function approveMap() {
+  async function approveMap() {
+    badgerAbortRef.current?.abort();
+    const controller = new AbortController();
+    badgerAbortRef.current = controller;
     setMapApproved(true);
-    setNotice(
-      "The concept map is approved. Language-specialist adaptation is the next build boundary; no corpus search has run yet.",
+    setBadgerLoading(true);
+    setBadgerJobStatus("starting");
+    setBadgerError("");
+    setNotice("The concept map is approved. The Latin badger is preparing an inspectable draft; no corpus search has run.");
+    requestAnimationFrame(() => {
+      document.getElementById("badger-room")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+    try {
+      let responseId = "";
+      while (!controller.signal.aborted) {
+        const response = await fetch(responseId ? "/api/adapt/status" : "/api/adapt", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          signal: controller.signal,
+          body: JSON.stringify({
+            approved: true,
+            question,
+            workspace,
+            responseId: responseId || undefined,
+          }),
+        });
+        const result = (await response.json()) as
+          | (BadgerResponse & { error?: string })
+          | (BadgerPendingResponse & { error?: string });
+        if (!response.ok && response.status !== 202) {
+          throw new Error(result.error || "The Latin badger could not prepare the folios.");
+        }
+        if (response.status === 202) {
+          const pending = result as BadgerPendingResponse;
+          if (!pending.responseId) throw new Error("The badger returned no usable job receipt.");
+          responseId = pending.responseId;
+          setBadgerJobStatus(pending.status);
+          setNotice(pending.notice);
+          await new Promise((resolve) => window.setTimeout(resolve, 3000));
+          continue;
+        }
+
+        const completed = result as BadgerResponse;
+        setBadgerPlan(completed.plan);
+        setExpandedFolioIds([]);
+        setProposalDraft(null);
+        setShelfPreviewLoadingId(null);
+        setShelfPreviewErrors({});
+        setNotice(completed.notice);
+        requestAnimationFrame(() => {
+          document.getElementById("badger-room")?.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+        break;
+      }
+    } catch (caught) {
+      if (controller.signal.aborted) return;
+      setBadgerError(
+        caught instanceof Error ? caught.message : "The Latin badger could not prepare the folios.",
+      );
+    } finally {
+      if (badgerAbortRef.current === controller) {
+        badgerAbortRef.current = null;
+        setBadgerLoading(false);
+        setBadgerJobStatus("starting");
+      }
+    }
+  }
+
+  function toggleFolio(folioId: string) {
+    setExpandedFolioIds((current) =>
+      current.includes(folioId)
+        ? current.filter((id) => id !== folioId)
+        : [...current, folioId],
     );
+  }
+
+  function updateBadgerFolio(
+    folioId: string,
+    updater: (folio: BadgerAdaptationPlan["folios"][number]) => BadgerAdaptationPlan["folios"][number],
+  ) {
+    setBadgerPlan((current) => {
+      if (!current) return current;
+      const folios = current.folios.map((folio) => folio.id === folioId ? updater(folio) : folio);
+      return {
+        ...current,
+        folios,
+        approvalStatus: folios.every((folio) => folio.status === "approved")
+          ? "approved"
+          : "draft",
+      };
+    });
+  }
+
+  function toggleProposalPin(folioId: string, proposal: AdaptationProposal) {
+    updateBadgerFolio(folioId, (folio) => ({
+      ...folio,
+      status: "scholar_edited",
+      proposals: folio.proposals.map((candidate) =>
+        candidate.id === proposal.id ? { ...candidate, pinned: !candidate.pinned } : candidate,
+      ),
+    }));
+  }
+
+  function toggleProposalActive(folioId: string, proposal: AdaptationProposal) {
+    updateBadgerFolio(folioId, (folio) => ({
+      ...folio,
+      status: "scholar_edited",
+      proposals: folio.proposals.map((candidate) =>
+        candidate.id === proposal.id ? { ...candidate, active: !candidate.active } : candidate,
+      ),
+    }));
+  }
+
+  function beginProposalEdit(proposal: AdaptationProposal) {
+    setProposalDraft({
+      proposalId: proposal.id,
+      latinExpression: proposal.latinExpression,
+      englishSense: proposal.englishSense,
+      rationale: proposal.rationale,
+      searchForms: proposal.searchForms.join(", "),
+    });
+  }
+
+  function saveProposalEdit(folioId: string) {
+    if (!proposalDraft) return;
+    const latinExpression = proposalDraft.latinExpression.trim();
+    const englishSense = proposalDraft.englishSense.trim();
+    const rationale = proposalDraft.rationale.trim();
+    if (!englishSense || !rationale) return;
+    const searchForms = [...new Set(
+      proposalDraft.searchForms
+        .split(/[,\n]+/)
+        .map((form) => form.trim())
+        .filter(Boolean),
+    )];
+    updateBadgerFolio(folioId, (folio) => ({
+      ...folio,
+      status: "scholar_edited",
+      proposals: folio.proposals.map((proposal) =>
+        proposal.id === proposalDraft.proposalId
+          ? {
+              ...proposal,
+              latinExpression,
+              englishSense,
+              rationale,
+              searchForms,
+              shelfPreview: undefined,
+              scholarEdited: true,
+              pinned: true,
+            }
+          : proposal,
+      ),
+    }));
+    setProposalDraft(null);
+  }
+
+  async function testProposalOnShelf(proposal: AdaptationProposal) {
+    if (!proposal.searchForms.length || shelfPreviewLoadingId) return;
+    setShelfPreviewLoadingId(proposal.id);
+    setShelfPreviewErrors((current) => ({ ...current, [proposal.id]: "" }));
+    try {
+      const response = await fetch("/api/shelf-preview", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          proposalId: proposal.id,
+          corpusId: badgerPlan?.corpusId,
+          queryForms: proposal.searchForms,
+          queryMode: "any",
+        }),
+      });
+      const result = (await response.json()) as ShelfPreviewResponse & { error?: string };
+      if (!response.ok) {
+        throw new Error(result.error || "The Latin shelf could not test these forms.");
+      }
+      setBadgerPlan((current) => current ? attachShelfPreview(current, result) : current);
+      setNotice(
+        `The Latin shelf tested ${proposal.searchForms.length === 1 ? "one literal form" : `${proposal.searchForms.length} literal forms`}. These are occurrence receipts, not relevance judgments.`,
+      );
+    } catch (caught) {
+      setShelfPreviewErrors((current) => ({
+        ...current,
+        [proposal.id]: caught instanceof Error
+          ? caught.message
+          : "The Latin shelf could not test these forms.",
+      }));
+    } finally {
+      setShelfPreviewLoadingId(null);
+    }
+  }
+
+  function toggleFolioApproval(folioId: string) {
+    const approving = badgerPlan?.folios.find((folio) => folio.id === folioId)?.status !== "approved";
+    updateBadgerFolio(folioId, (folio) => ({
+      ...folio,
+      status: folio.status === "approved" ? "scholar_edited" : "approved",
+    }));
+    if (approving) {
+      setExpandedFolioIds((current) => current.filter((id) => id !== folioId));
+      setProposalDraft(null);
+    }
   }
 
   const tableFamilies = orderedFamilyIds().flatMap((id) => {
@@ -937,7 +1337,11 @@ export function ResearchWorkbench() {
             </div>
             <span className={`mode-badge ${mode}`}>
               <span aria-hidden="true" />
-              {mode === "live" ? "Live inquiry" : "Documented example"}
+              {loadingTarget === "question"
+                ? "Live fox answering"
+                : mode === "live"
+                  ? "Live inquiry"
+                  : "Saved example available"}
             </span>
           </div>
 
@@ -967,12 +1371,11 @@ export function ResearchWorkbench() {
                   </button>
                 </div>
               </form>
-              {loadingTarget === "question" ? <FoxLoadingVignette kind="first-map" /> : null}
               <div className="fox-room-note">
                 <p>{notice}</p>
                 {mode === "demo" ? (
                   <button type="button" onClick={openDocumentedConversation}>
-                    Open the documented conversation
+                    Open the saved example
                   </button>
                 ) : null}
               </div>
@@ -989,10 +1392,12 @@ export function ResearchWorkbench() {
                     {turn.text.split("\n").map((paragraph, index) => <p key={index}>{paragraph}</p>)}
                   </article>
                 ))}
+                {loadingTarget === "question"
+                  ? <FoxThinkingTurn firstReply />
+                  : !tableVisible && loadingTarget === "conversation"
+                    ? <FoxThinkingTurn />
+                    : null}
               </div>
-              {!tableVisible && loadingTarget !== null && loadingTarget !== "question"
-                ? <FoxLoadingVignette kind="revision" />
-                : null}
               <form
                 className="fox-follow-up"
                 onSubmit={(event) => {
@@ -1020,7 +1425,14 @@ export function ResearchWorkbench() {
             </div>
           )}
 
-          {error ? <p className="fox-error" role="alert">{error}</p> : null}
+          {error ? (
+            <div className="fox-error" role="alert">
+              <p>{error}</p>
+              {mode === "demo" ? (
+                <button type="button" onClick={openDocumentedConversation}>Open the saved example instead</button>
+              ) : null}
+            </div>
+          ) : null}
         </div>
       </section>
 
@@ -1050,7 +1462,7 @@ export function ResearchWorkbench() {
             </div>
             <p className="table-fox-latest">{workspace.nextQuestion}</p>
             {tableVisible && loadingTarget !== null && loadingTarget !== "question"
-              ? <FoxLoadingVignette kind="revision" compact />
+              ? <FoxLoadingVignette compact />
               : null}
             <details className="table-conversation-history">
               <summary>Read the conversation</summary>
@@ -1373,12 +1785,220 @@ export function ResearchWorkbench() {
                 ? `“${inquiryFocus.label}” is the Focus of Inquiry. The other ideas remain in play.`
                 : "Would you like to focus on one area, or keep the inquiry broad? You may mark one family or concept as the Focus of Inquiry if you wish."}</p>
           </div>
-          <button className="approve-map" type="button" onClick={approveMap} disabled={mapApproved}>
-            {mapApproved ? "Map approved" : "Yes—this looks like my question"}
+          <button
+            className="approve-map"
+            type="button"
+            onClick={() => void approveMap()}
+            disabled={badgerLoading || Boolean(badgerPlan)}
+          >
+            {badgerLoading
+              ? "Walking to the Latin desk…"
+              : badgerPlan
+                ? "Map handed to the badger"
+                : mapApproved
+                  ? "Try the Latin handoff again"
+                  : "Yes—this looks like my question"}
           </button>
           <button className="keep-working" type="button" onClick={focusTableFox}>Keep working with the fox</button>
         </div>
       </section>
+
+      {mapApproved ? (
+        <section className="badger-room" id="badger-room" aria-labelledby="badger-room-title" aria-busy={badgerLoading}>
+          <div className="badger-room-art" aria-hidden="true" />
+          <div className="badger-room-inner">
+            <header className="badger-room-heading">
+              <div>
+                <p className="eyebrow">At the Latin badger&apos;s desk</p>
+                <h2 id="badger-room-title">Let&apos;s see what your question becomes here.</h2>
+              </div>
+              <p>
+                Each folio belongs to one fox card. Open it to inspect the Latin proposals,
+                change the badger&apos;s wording, pin what must remain, or set a suggestion aside.
+              </p>
+            </header>
+
+            {badgerLoading ? <BadgerLoadingVignette status={badgerJobStatus} /> : null}
+
+            {badgerError ? (
+              <div className="badger-error" role="alert">
+                <div><strong>The folios did not arrive.</strong><p>{badgerError}</p></div>
+                <button type="button" onClick={() => void approveMap()}>Try the handoff again</button>
+              </div>
+            ) : null}
+
+            {badgerPlan ? (
+              <div className="badger-desk">
+                <div className="badger-ledger-note">
+                  <span>{badgerPlan.corpusLabel}</span>
+                  <p>{badgerPlan.holdingsNote}</p>
+                  <strong>Draft proposals · literal shelf checks remain separate from relevance judgment</strong>
+                </div>
+
+                <div className="folio-stack">
+                  {badgerPlan.folios.map((folio) => {
+                    const expanded = expandedFolioIds.includes(folio.id);
+                    const summary = summarizeFolio(folio);
+                    const activeCount = folio.proposals.filter((proposal) => proposal.active).length;
+                    return (
+                      <article className={`badger-folio ${expanded ? "expanded" : ""} ${folio.status}`} key={folio.id}>
+                        <button
+                          className="folio-cover"
+                          type="button"
+                          onClick={() => toggleFolio(folio.id)}
+                          aria-expanded={expanded}
+                          aria-controls={`${folio.id}-contents`}
+                        >
+                          <span className="folio-tab">From the fox: {folio.sourceFamilyTitle}</span>
+                          <span className="folio-cover-copy">
+                            <strong>{folio.sourceFamilyTitle}</strong>
+                            <small>{folio.summary}</small>
+                          </span>
+                          <span className="folio-metrics" aria-label="Folio summary">
+                            <span><b>{summary.directProposalCount}</b> direct</span>
+                            <span><b>{summary.exploratoryProposalCount}</b> exploratory</span>
+                            <span><b>{summary.warningCount}</b> cautions</span>
+                            <span className={`confidence ${folio.overallConfidence}`}>{folio.overallConfidence}</span>
+                            <span className={`folio-status ${folio.status}`}>{folio.status.replace("_", " ")}</span>
+                          </span>
+                          <span className="folio-open-label">
+                            {expanded
+                              ? "Close folio"
+                              : folio.status === "approved"
+                                ? "Reopen folio"
+                                : "Open and inspect"}{" "}
+                            <b aria-hidden="true">{expanded ? "−" : "+"}</b>
+                          </span>
+                        </button>
+
+                        {expanded ? (
+                          <div className="folio-contents" id={`${folio.id}-contents`}>
+                            <div className="folio-context">
+                              <div><span>Scope for this family</span><p>{folio.scopeNote}</p></div>
+                              <div><span>Largest anticipated risk</span><p>{folio.highestRisk}</p></div>
+                            </div>
+
+                            <div className="proposal-list">
+                              {folio.proposals.map((proposal) => {
+                                const editing = proposalDraft?.proposalId === proposal.id;
+                                const disclosureOnly = proposal.retrievalEffect === "disclose_only";
+                                return (
+                                  <article
+                                    className={`badger-proposal ${proposal.active ? "active" : "inactive"} category-${proposal.category}`}
+                                    key={proposal.id}
+                                  >
+                                    <header>
+                                      <div>
+                                        <span>{categoryLabels[proposal.category]} · from “{proposal.sourceConceptLabel}”</span>
+                                        <strong>{proposal.latinExpression || "No Latin form proposed yet"}</strong>
+                                      </div>
+                                      <div className="proposal-state">
+                                        <span className={`confidence ${proposal.confidence}`}>{proposal.confidence}</span>
+                                        <span>{effectLabels[proposal.retrievalEffect]}</span>
+                                        {proposal.pinned ? <span className="pinned">Scholar pinned</span> : null}
+                                      </div>
+                                    </header>
+
+                                    {editing && proposalDraft ? (
+                                      <form className="proposal-edit" onSubmit={(event) => { event.preventDefault(); saveProposalEdit(folio.id); }}>
+                                        <label>Latin expression<input value={proposalDraft.latinExpression} onChange={(event) => setProposalDraft({ ...proposalDraft, latinExpression: event.target.value })} /></label>
+                                        <label>Meaning in ordinary English<textarea rows={2} value={proposalDraft.englishSense} onChange={(event) => setProposalDraft({ ...proposalDraft, englishSense: event.target.value })} /></label>
+                                        <label>Why it may help<textarea rows={3} value={proposalDraft.rationale} onChange={(event) => setProposalDraft({ ...proposalDraft, rationale: event.target.value })} /></label>
+                                        <label>Literal forms, separated by commas<textarea rows={3} value={proposalDraft.searchForms} onChange={(event) => setProposalDraft({ ...proposalDraft, searchForms: event.target.value })} /></label>
+                                        <div><button type="submit">Save and pin my version</button><button type="button" onClick={() => setProposalDraft(null)}>Cancel</button></div>
+                                      </form>
+                                    ) : (
+                                      <>
+                                        <p className="proposal-sense">{proposal.englishSense}</p>
+                                        <p className="proposal-rationale">{proposal.rationale}</p>
+
+                                        {proposal.searchForms.length ? (
+                                          <div className="proposal-forms"><span>Literal forms to test</span><div>{proposal.searchForms.map((form) => <code key={form}>{form}</code>)}</div></div>
+                                        ) : null}
+                                        {proposal.phrases.length || proposal.syntacticFrame ? (
+                                          <div className="proposal-pattern"><span>Phrase or relationship pattern</span><p>{[...proposal.phrases, proposal.syntacticFrame].filter(Boolean).join(" · ")}</p></div>
+                                        ) : null}
+                                        {proposal.periodTags.length || proposal.genreTags.length ? (
+                                          <div className="proposal-tags">
+                                            {[...proposal.periodTags, ...proposal.genreTags].map((tag) => <span key={tag}>{tag}</span>)}
+                                          </div>
+                                        ) : null}
+
+                                        {proposal.falsePositiveForecast.length ? (
+                                          <details className="proposal-cautions">
+                                            <summary>Why this may produce misleading results ({proposal.falsePositiveForecast.length})</summary>
+                                            <ul>{proposal.falsePositiveForecast.map((warning) => <li key={warning}>{warning}</li>)}</ul>
+                                          </details>
+                                        ) : null}
+                                        {proposal.uncertaintyNotes.length ? (
+                                          <details className="proposal-cautions uncertainty">
+                                            <summary>What remains uncertain ({proposal.uncertaintyNotes.length})</summary>
+                                            <ul>{proposal.uncertaintyNotes.map((warning) => <li key={warning}>{warning}</li>)}</ul>
+                                          </details>
+                                        ) : null}
+
+                                        <p className="verification-note"><span>Evidence status</span>{proposal.verificationNote}</p>
+                                        {proposal.shelfPreview ? <ShelfPreviewResult preview={proposal.shelfPreview} /> : null}
+                                        {shelfPreviewErrors[proposal.id] ? (
+                                          <p className="shelf-preview-error" role="alert">{shelfPreviewErrors[proposal.id]}</p>
+                                        ) : null}
+                                        <div className="proposal-actions">
+                                          {!disclosureOnly && proposal.searchForms.length ? (
+                                            <button
+                                              type="button"
+                                              className="test-shelf"
+                                              onClick={() => void testProposalOnShelf(proposal)}
+                                              disabled={Boolean(shelfPreviewLoadingId)}
+                                            >
+                                              {shelfPreviewLoadingId === proposal.id
+                                                ? "Checking the shelf…"
+                                                : proposal.shelfPreview
+                                                  ? "Test these forms again"
+                                                  : "Test these forms on the shelf"}
+                                            </button>
+                                          ) : null}
+                                          <button type="button" onClick={() => beginProposalEdit(proposal)}>Edit proposal</button>
+                                          <button type="button" className={proposal.pinned ? "active" : ""} onClick={() => toggleProposalPin(folio.id, proposal)}>{proposal.pinned ? "Unpin" : "Pin"}</button>
+                                          {disclosureOnly ? (
+                                            <span>Shown as a caution; it will not become a search term.</span>
+                                          ) : (
+                                            <button type="button" className={!proposal.active ? "restore" : ""} onClick={() => toggleProposalActive(folio.id, proposal)}>{proposal.active ? "Set aside" : "Restore proposal"}</button>
+                                          )}
+                                        </div>
+                                      </>
+                                    )}
+                                  </article>
+                                );
+                              })}
+                            </div>
+
+                            <div className="folio-approval">
+                              <div><span>{activeCount} active proposals</span><p>Approving this folio still does not run full retrieval or judge a match&apos;s relevance.</p></div>
+                              <button type="button" onClick={() => toggleFolioApproval(folio.id)} disabled={Boolean(proposalDraft)}>
+                                {folio.status === "approved" ? "Return this folio to review" : "Approve this folio"}
+                              </button>
+                            </div>
+                          </div>
+                        ) : null}
+                      </article>
+                    );
+                  })}
+                </div>
+
+                <div className={`badger-plan-status ${badgerPlan.approvalStatus}`} aria-live="polite">
+                  <div>
+                    <span>{badgerPlan.approvalStatus === "approved" ? "Latin plan approved" : "Scholar review remains open"}</span>
+                    <p>{badgerPlan.approvalStatus === "approved"
+                      ? "Every folio is approved. Literal previews may be attached; full multi-term retrieval and owl judgment have not run."
+                      : "Open each folio, keep what helps, and set aside what does not. Approval belongs to you."}</p>
+                  </div>
+                  <strong>{badgerPlan.folios.filter((folio) => folio.status === "approved").length} / {badgerPlan.folios.length} folios approved</strong>
+                </div>
+              </div>
+            ) : null}
+          </div>
+        </section>
+      ) : null}
 
       {pileOpen ? (
         <div className="drawer-scrim" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && setPileOpen(false)}>

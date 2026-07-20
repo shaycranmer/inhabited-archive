@@ -135,6 +135,8 @@ same canonical content hash. See
 `schema/PERSEUS_LATIN_DEMO_ADAPTER_V1.md` for commands, metrics, the one
 explicit Plautus coverage warning, and the plain-language receipt.
 
-The next technical boundary is the inspectable Latin adaptation contract and
-the explicit runtime bridge between the local index and the Explorer. The
-scholar must approve the language-specific plan before it drives retrieval.
+The inspectable Latin adaptation contract and first explicit runtime bridge are
+now implemented. The verified SQLite shelf exports into a receipt-locked local
+D1 serving database; a scholar can test an individual badger proposal without
+approving it or invoking relevance judgment. Public D1 loading and complete
+approved-plan retrieval remain the next technical boundaries.
