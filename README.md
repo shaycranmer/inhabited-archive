@@ -104,10 +104,22 @@ before semantic or agentic retrieval is added.
 The first live spot check surfaced a passage in *Acta Sanctorum, Iulius 7*
 that discusses Greek `ἑξάς` / Latin `senarius` as beautiful and perfect.
 
+The Project Day shelf now has its own manifest-driven search floor. Thirty
+complete Perseus Latin works normalize into 61,651 provenance-locked passages
+in a rebuildable SQLite FTS5 database. A developer can build it with
+`python3 tools/build_demo_latin_corpus.py` and inspect literal results with
+`python3 tools/search_demo_latin_corpus.py somnium`. See
+`schema/PERSEUS_LATIN_DEMO_ADAPTER_V1.md` for the technical and plain-language
+receipt. The index is real and locally verified but is not yet connected to
+the Explorer's badger handoff.
+
 ## Build Week Explorer
 
-The public-facing vertical slice lives in `explorer/`. It demonstrates the
-full research method on a small rights-safe passage packet:
+The public-facing vertical slice lives in `explorer/`. The fox clarification
+room and editable concept worktable operate dynamically with an API key. A
+small rights-safe passage packet remains a regression fixture, while the new
+30-work Latin index supplies the real retrieval floor that will enter after
+the language-specialist handoff:
 
 ```text
 English question → inspectable concept map → Greek and Latin query adaptation
