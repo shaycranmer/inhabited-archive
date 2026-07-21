@@ -14,6 +14,7 @@ and its research foundation, Number Rants.
 - **Try the no-key demonstration:** <https://inhabited-archive.shaytaki.chatgpt.site>
 - **Install it yourself:** [`docs/INSTALL_THE_INHABITED_ARCHIVE.md`](docs/INSTALL_THE_INHABITED_ARCHIVE.md)
 - **Download the 30-work Latin serving shelf:** [Build Week release](https://github.com/shaycranmer/inhabited-archive/releases/tag/v0.1.0-build-week)
+- **Read the submission story:** [`docs/SUBMISSION_STORY.md`](docs/SUBMISSION_STORY.md)
 - **Inspect the application:** [`explorer/`](explorer/)
 
 ## What the scholar experiences
