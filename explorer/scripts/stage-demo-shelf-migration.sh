@@ -19,7 +19,49 @@ if [[ "$actual_sha256" != "$expected_sha256" ]]; then
 fi
 
 mkdir -p "$migration_dir"
-split -l 12000 -a 2 "$source_sql" "$migration_dir/seed_part_"
+rm -f "$migration_dir"/*_seed_latin_shelf.sql "$migration_dir"/seed_part_*
+
+# Drizzle separates migration statements with this marker. The shelf contains
+# multiline quoted passages, so split only after a semicolon outside a SQL
+# string; a fixed line-count split can bisect a Latin passage and corrupt it.
+awk -v prefix="$migration_dir/seed_part_" -v max_bytes=4000000 '
+  BEGIN {
+    part = 0
+    bytes = 0
+    quoted = 0
+    file = sprintf("%s%02d", prefix, part)
+  }
+  {
+    print $0 >> file
+    bytes += length($0) + 1
+    statement_ended = 0
+
+    for (i = 1; i <= length($0); i++) {
+      char = substr($0, i, 1)
+      if (char == "\047") {
+        if (quoted && substr($0, i + 1, 1) == "\047") {
+          i++
+        } else {
+          quoted = !quoted
+        }
+      } else if (char == ";" && !quoted) {
+        statement_ended = 1
+      }
+    }
+
+    if (statement_ended) {
+      print "--> statement-breakpoint" >> file
+      bytes += 25
+      if (bytes >= max_bytes) {
+        close(file)
+        part++
+        bytes = 0
+        file = sprintf("%s%02d", prefix, part)
+      }
+    }
+  }
+  END { close(file) }
+' "$source_sql"
 
 index=2
 for part in "$migration_dir"/seed_part_*; do
