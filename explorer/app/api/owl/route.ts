@@ -106,7 +106,7 @@ export async function POST(request: Request) {
         promptVersion: owlAdjudicationPromptVersion,
         status: result.status,
         notice:
-          "The owl is comparing the retrieved passages to the complete approved inquiry. The source packet and its hashes remain fixed while the app checks back.",
+          "The owl is comparing the retrieved passages to the complete approved inquiry. The source packet and its hashes remain fixed while the reading desk checks back.",
       }, { status: 202 });
     }
     const ready = readyResponse(run, result);

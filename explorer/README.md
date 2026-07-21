@@ -1,6 +1,6 @@
 # The Inhabited Archive
 
-The Build Week research instrument growing from the larger Number Rants corpus
+The public research instrument growing from the larger Number Rants corpus
 project. Number Rants remains the proving ground and demonstration inquiry;
 The Inhabited Archive is the topic-general public interface.
 
@@ -39,6 +39,19 @@ exactly `OPENAI_API_KEY`; prefixes such as `NEXT_PUBLIC_` or `VITE_` can expose
 values to browser code. The repository ignores `.env.local`, while the empty
 `.env.example` remains safe to publish. Restart the local development server
 after adding the key.
+
+An OpenAI API key does not have a scholarly personality of its own. Two valid
+keys using the same configured model and prompts should use the same
+infrastructure; account access, rate limits, and model availability may differ.
+This version calls OpenAI's Responses API directly, so a Claude/Anthropic key
+cannot be substituted in `.env.local`. Supporting Claude is a future provider
+adapter: it will require mapping this app's strict schemas, background jobs,
+and response receipts to Anthropic's API and then rerunning the scholarly
+evaluation suite. Do not relabel one provider's key as another and assume the
+same guarantees survived.
+
+For a fresh-machine walkthrough—including the shelf, key, and library-adapter
+boundary—see [`../docs/INSTALL_THE_INHABITED_ARCHIVE.md`](../docs/INSTALL_THE_INHABITED_ARCHIVE.md).
 
 The key stays server-side. All live model routes set `store: false` and request
 strict structured output from the Responses API. The long-running badger route

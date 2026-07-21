@@ -119,7 +119,7 @@ export async function POST(request: Request) {
           packetVersion: latinAdaptationPacketVersion,
           status: result.status,
           notice:
-            "The badger is working in the background. The approved fox table is fixed while the app checks back for the folios.",
+            "The badger is working in the background. The approved table is fixed while the language desk checks back for the folios.",
         },
         { status: 202 },
       );

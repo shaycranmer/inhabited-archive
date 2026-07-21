@@ -7,6 +7,13 @@ project after compaction, interruption, or machine migration.
 
 ## Current State
 
+- The Inhabited Archive's Latin vertical slice is end to end: fox clarification,
+  inspectable concept table, catalogue-scope enforcement, badger folios,
+  deterministic retrieval, owl adjudication, and labeled working translation.
+- The private Sites deployment contains the complete thirty-work shelf rather
+  than an interface-only shell. The live shelf receipt verifies 30 works and
+  61,651 passages.
+
 - Broad source discovery and the first two major acquisition waves are
   complete.
 - The raw and derived local library is approximately 60 GiB.
@@ -51,13 +58,37 @@ Historical logs may retain absolute paths as provenance. Use
   checkpoints.
 - The public GitHub repository is named `shaycranmer/inhabited-archive` and is
   the publication target for this history.
-- The Build Week Explorer under `explorer/` is committed locally. It compiles,
+- The Explorer under `explorer/` is committed locally. It compiles,
   and its current lint, build, rendered-page, and provenance tests pass.
-  Pushes and deployments remain separately authorized publication actions.
+  A private Sites deployment is active; a public GitHub push or public-access
+  change remains a separately authorized publication action.
 - The project code license is MIT, and original project documentation is CC BY
   4.0 except where otherwise noted. `DATA_LICENSES.md` explicitly keeps
   third-party corpora, editions, translations, and records outside those
   grants.
+
+## Due-Day Hardening - July 21
+
+The final full scholarly walkthrough produced contained interaction and copy
+hardening without changing the retrieval architecture. The fox now keeps the
+newest reply in view, names whether additions became new table cards or child
+ideas inside existing cards, explicitly cues the table button, and returns the
+reader to a collapsed card after inspection. Its combined reply/table wait is
+described honestly; separating those into two model calls remains a later
+latency redesign.
+
+Badger language no longer refers to “the app,” folios are prominently numbered
+and tied to “table cards,” and the rotating 3–5 minute waiting copy now mixes
+method reminders with restrained librarian humor. The former “Corpus
+boundary” is explained as a warning about what the installed shelf can cover.
+
+The owl no longer repeats its crucial original-language excerpt above the
+context. Only the exact matching source unit receives strong emphasis, with
+the precise excerpt marked inside it; neighboring evidence units remain quiet.
+Low-relevance leaves are visibly labeled “Probably not what you need,” and
+disclosure controls use a pointer cursor. A new installation guide separates
+the librarians, OpenAI model connection, and corpus-adapter contract and states
+plainly that Anthropic keys require a future provider adapter.
 
 ## Build Week Co-Design State - July 20
 

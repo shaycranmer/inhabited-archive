@@ -88,7 +88,7 @@ export async function POST(request: Request) {
           packetVersion: latinAdaptationPacketVersion,
           status: result.status,
           notice:
-            "The badger is still working. The app is checking its receipt without changing the approved fox table.",
+            "The badger is still working. The language desk is checking its receipt without changing the approved table.",
         },
         { status: 202 },
       );

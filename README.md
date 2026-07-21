@@ -118,10 +118,11 @@ D1 serving projection now connects both individual badger proposal checks and
 full approved-plan retrieval to the Explorer. The live Latin badger turns an
 approved fox table into strict, inspectable, still-unverified folios;
 application code then executes their literal forms, deduplicates overlapping
-passages, and builds an immutable candidate packet. Public D1 loading remains
-open.
+passages, and builds an immutable candidate packet. The hosted build stages the
+reviewed shelf as ordered D1 migrations; the same receipt is checked again
+before any live coverage preview or retrieval.
 
-## Build Week Explorer
+## The Inhabited Archive Explorer
 
 The public-facing vertical slice lives in `explorer/`. The fox clarification
 room and editable concept worktable operate dynamically with an API key. A

@@ -96,12 +96,16 @@ const revisionLoadingNotes = [
 ];
 
 const badgerLoadingNotes = [
-  "Each fox card is being adapted into a source-language folio.",
+  "Each table card is being adapted into a source-language folio.",
   "Direct wording is being separated from looser historical associations.",
   "Broad source-language words are being asked to explain themselves.",
   "Word forms a literal catalogue might otherwise miss are being listed.",
   "Likely false positives are being recorded before they can look impressive.",
   "Your approved fox table remains fixed while the folios take shape.",
+  "One badger has found three ways a near-synonym could betray us.",
+  "A small disagreement about historical meaning has broken out at the language desk.",
+  "A badger got stuck in a catalogue drawer. Scholarship continues.",
+  "This is a respectable moment to stretch your spine while the badgers sort the wording.",
 ];
 
 const categoryLabels = {
@@ -125,6 +129,27 @@ const confidenceLabels = {
   probable: "Promising wording",
   speculative: "Exploratory wording",
 } as const;
+
+const dispositionLabels = {
+  strong: "Strong passage lead",
+  possible: "Possible passage lead",
+  liminal: "Borderline · read cautiously",
+  unresolved: "Unresolved · needs wider reading",
+  incidental: "Probably not what you need",
+} as const;
+
+function highlightedEvidenceText(text: string, excerpt: string) {
+  const needle = excerpt.trim();
+  const start = needle ? text.indexOf(needle) : -1;
+  if (start < 0) return text;
+  return (
+    <>
+      {text.slice(0, start)}
+      <mark>{text.slice(start, start + needle.length)}</mark>
+      {text.slice(start + needle.length)}
+    </>
+  );
+}
 
 function FoxLoadingVignette({ compact = false }: { compact?: boolean }) {
   const notes = revisionLoadingNotes;
@@ -159,8 +184,8 @@ function FoxThinkingTurn({ firstReply = false }: { firstReply?: boolean }) {
       <div className="fox-turn-meta"><strong>The fox</strong><span>Thinking with you</span></div>
       <p>
         {firstReply
-          ? "One moment. I’m listening for the shape of the question before we make any cards."
-          : "Let me think that through before I answer."}
+          ? "I’m listening for the shape of the question and sketching its first cards. This combined reply and table draft can take 30–60 seconds."
+          : "I’m revising both my answer and the table beneath it. This can take 30–60 seconds."}
         <span className="thinking-dots" aria-hidden="true"><i /><i /><i /></span>
       </p>
     </article>
@@ -192,8 +217,8 @@ function BadgerLoadingVignette({ status }: { status: "starting" | "queued" | "in
         <p key={noteIndex}>{badgerLoadingNotes[noteIndex]}</p>
         <small>
           This can take several minutes—usually 3–5. The badger is drafting and checking the language plan—not
-          searching the corpus yet. The app is checking back without holding one fragile connection open.
-          Your approved fox table will not change. Optional literal shelf checks happen later, only when you ask for them.
+          searching the corpus yet. Between visits, the desk checks a background receipt instead of depending on one
+          fragile connection. Your approved table stays fixed. Optional literal shelf checks happen later, only when you ask for them.
         </small>
       </div>
     </div>
@@ -278,7 +303,7 @@ function OwlWaitingVignette({ stage }: { stage: OwlStage }) {
   const copy = {
     retrieving: {
       label: "Searching the declared shelf",
-      text: "The application is executing the approved folios and gathering literal candidates. No relevance judgment has run yet.",
+      text: "The archive is following the approved folios and gathering literal candidates. No relevance judgment has run yet.",
     },
     starting: {
       label: "Preparing the owl’s evidence packet",
@@ -286,7 +311,7 @@ function OwlWaitingVignette({ stage }: { stage: OwlStage }) {
     },
     queued: {
       label: "The owl has your passages in the queue",
-      text: "The complete inquiry snapshot is fixed. The app is checking a background receipt without changing the retrieved texts.",
+      text: "The complete inquiry snapshot is fixed. The reading desk is checking a background receipt without changing the retrieved texts.",
     },
     in_progress: {
       label: "The owl is comparing the passages to your question",
@@ -315,6 +340,46 @@ function normalized(value: string) {
 
 function describeFox(workspace: QueryWorkspace) {
   return `${workspace.foxReply}\n\n${workspace.nextQuestion}`;
+}
+
+function describeTablePlacements(previous: QueryWorkspace, next: QueryWorkspace) {
+  const placements: string[] = [];
+  const previousFamilies = new Map(
+    previous.conceptFamilies.map((family) => [normalized(family.title), family]),
+  );
+
+  for (const family of next.conceptFamilies) {
+    const earlier = previousFamilies.get(normalized(family.title));
+    if (!earlier) {
+      placements.push(`I added a new table card called “${family.title}.”`);
+      continue;
+    }
+    const earlierTerms = new Set(earlier.terms.map((term) => normalized(term.label)));
+    const additions = family.terms.filter((term) => !earlierTerms.has(normalized(term.label)));
+    if (additions.length) {
+      placements.push(
+        `Inside “${family.title},” I added ${additions.map((term) => `“${term.label}”`).join(", ")}.`,
+      );
+    }
+  }
+
+  const describeBoundaryAdditions = (
+    oldCards: BoundaryCard[],
+    newCards: BoundaryCard[],
+    location: string,
+  ) => {
+    const earlier = new Set(oldCards.map((card) => normalized(card.label)));
+    const additions = newCards.filter((card) => !earlier.has(normalized(card.label)));
+    if (additions.length) {
+      placements.push(
+        `Under ${location}, I added ${additions.map((card) => `“${card.label}”`).join(", ")}.`,
+      );
+    }
+  };
+  describeBoundaryAdditions(previous.scopeChoices, next.scopeChoices, "Scope");
+  describeBoundaryAdditions(previous.exclusions, next.exclusions, "Keep out");
+
+  return placements.join(" ");
 }
 
 function initialConversation(): ConversationTurn[] {
@@ -539,11 +604,20 @@ export function ResearchWorkbench() {
   const [librarianPetted, setLibrarianPetted] = useState(false);
   const badgerAbortRef = useRef<AbortController | null>(null);
   const owlAbortRef = useRef<AbortController | null>(null);
+  const foxTranscriptRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => () => {
     badgerAbortRef.current?.abort();
     owlAbortRef.current?.abort();
   }, []);
+
+  useEffect(() => {
+    const transcript = foxTranscriptRef.current;
+    if (!transcript) return;
+    requestAnimationFrame(() => {
+      transcript.scrollTop = transcript.scrollHeight;
+    });
+  }, [conversation, loadingTarget]);
 
   function commit(
     nextWorkspace: QueryWorkspace,
@@ -685,6 +759,7 @@ export function ResearchWorkbench() {
       if (!response.ok) throw new Error(result.error || "The fox could not revise the table.");
 
       const merged = mergeWorkspace(workspace, result.workspace, pile);
+      const placementNote = describeTablePlacements(workspace, merged.workspace);
       setWorkspace(merged.workspace);
       setPile([...pile, ...merged.removed]);
       setMode("live");
@@ -701,7 +776,7 @@ export function ResearchWorkbench() {
         {
           id: makeId("turn"),
           speaker: "fox",
-          text: describeFox(result.workspace),
+          text: [describeFox(result.workspace), placementNote].filter(Boolean).join("\n\n"),
           cardId: focusFamily?.id,
           cardTitle: focusFamily?.title,
         },
@@ -1146,6 +1221,15 @@ export function ResearchWorkbench() {
         block: "start",
       });
     });
+  }
+
+  function toggleFamilyCard(familyId: string, expanded: boolean) {
+    setFocusedFamilyId(expanded ? null : familyId);
+    if (expanded) {
+      requestAnimationFrame(() => {
+        document.getElementById(familyId)?.scrollIntoView({ behavior: "smooth", block: "center" });
+      });
+    }
   }
 
   function orderedFamilyIds() {
@@ -1634,7 +1718,7 @@ export function ResearchWorkbench() {
           <span><strong>The Inhabited Archive</strong><small>A multilingual research instrument</small></span>
         </a>
         <div className="header-meta">
-          <span>OpenAI Build Week 2026</span>
+          <span>Source-grounded inquiry</span>
           <a href="#method">How it works</a>
         </div>
       </header>
@@ -1713,7 +1797,7 @@ export function ResearchWorkbench() {
             </div>
           ) : (
             <div className="fox-conversation" id="fox-conversation" tabIndex={-1} aria-busy={loadingTarget !== null}>
-              <div className="fox-transcript" aria-live="polite">
+              <div className="fox-transcript" ref={foxTranscriptRef} aria-live="polite">
                 {conversation.map((turn) => (
                   <article className={`fox-turn ${turn.speaker}`} key={turn.id}>
                     <div className="fox-turn-meta">
@@ -1729,6 +1813,9 @@ export function ResearchWorkbench() {
                     ? <FoxThinkingTurn />
                     : null}
               </div>
+              <p className="fox-table-cue">
+                When the question feels right, click “I’m done — take me to the table.” A written “yes” continues the conversation but does not move rooms.
+              </p>
               <form
                 className="fox-follow-up"
                 onSubmit={(event) => {
@@ -1864,7 +1951,7 @@ export function ResearchWorkbench() {
                       <button
                         type="button"
                         className="family-focus"
-                        onClick={() => setFocusedFamilyId(expanded ? null : family.id)}
+                        onClick={() => toggleFamilyCard(family.id, expanded)}
                         aria-expanded={expanded}
                       >
                         <span className="card-kind">{family.inquiryFocus ? "Focus of Inquiry · Concept family" : "Concept family"}</span>
@@ -2016,7 +2103,7 @@ export function ResearchWorkbench() {
                               id={`talk-${family.id}`}
                               value={cardMessage}
                               onChange={(event) => setCardMessage(event.target.value)}
-                              placeholder={`“Keep these two, and set the rest of ${family.title} aside.”`}
+                              placeholder={`“Add a missing idea, split this card, or tell the fox what ${family.title} should leave out.”`}
                               rows={2}
                             />
                             <button type="submit" disabled={!cardMessage.trim() || loadingTarget !== null}>
@@ -2026,7 +2113,7 @@ export function ResearchWorkbench() {
                         </form>
                         <div className="family-footer">
                           <button type="button" onClick={() => setAsideFamily(family)}>Move family to set-aside stack</button>
-                          <button type="button" onClick={() => setFocusedFamilyId(null)}>Return to the full table</button>
+                          <button type="button" onClick={() => toggleFamilyCard(family.id, true)}>Return to the full table</button>
                         </div>
                       </div>
                     ) : null}
@@ -2129,7 +2216,10 @@ export function ResearchWorkbench() {
             </button>
 
             <aside className={`coverage-note ${workspace.coverageStatus}`}>
-              <span>Corpus boundary</span>
+              <span>What this demo shelf can cover</span>
+              <p className="coverage-explanation">
+                This warning compares your question with the installed library. It does not alter the search; it tells you when this shelf may be too small or historically mismatched.
+              </p>
               <p>{workspace.coverageNote}</p>
               {workspace.bridgeSuggestions.length ? (
                 <ul>{workspace.bridgeSuggestions.map((bridge) => <li key={bridge}>{bridge}</li>)}</ul>
@@ -2180,8 +2270,8 @@ export function ResearchWorkbench() {
               </div>
               <p>
                 {badgerPlan
-                  ? "Each folio belongs to one fox card. The active folio opens for review; approving it closes the work and brings the next one forward."
-                  : "The badger is adapting each fox card into historically useful source-language wording, while recording ambiguity, exclusions, and likely false positives."}
+                  ? "Each folio belongs to one table card. The active folio opens for review; approving it closes the work and brings the next one forward."
+                  : "The badger is adapting each table card into historically useful source-language wording, while recording ambiguity, exclusions, and likely false positives."}
               </p>
             </header>
 
@@ -2205,7 +2295,7 @@ export function ResearchWorkbench() {
                 <div className="badger-folio-margin" aria-hidden="true" />
 
                 <div className="folio-stack">
-                  {badgerPlan.folios.map((folio) => {
+                  {badgerPlan.folios.map((folio, folioIndex) => {
                     const expanded = expandedFolioIds.includes(folio.id);
                     const summary = summarizeFolio(folio);
                     const activeCount = folio.proposals.filter((proposal) => proposal.active).length;
@@ -2222,8 +2312,9 @@ export function ResearchWorkbench() {
                           aria-expanded={expanded}
                           aria-controls={`${folio.id}-contents`}
                         >
-                          <span className="folio-tab">From the fox: {folio.sourceFamilyTitle}</span>
+                          <span className="folio-tab">Folio {String(folioIndex + 1).padStart(2, "0")} · from table card: {folio.sourceFamilyTitle}</span>
                           <span className="folio-cover-copy">
+                            <span className="folio-number">Folio {String(folioIndex + 1).padStart(2, "0")}</span>
                             <strong>{folio.sourceFamilyTitle}</strong>
                             <small>{folio.summary}</small>
                           </span>
@@ -2551,11 +2642,16 @@ export function ResearchWorkbench() {
                       if (!candidate) return null;
                       const translation = translationForCandidate(activeOwlRecord, judgment);
                       const loadingId = `${activeOwlRecord.retrieval.runId}:${candidate.candidateId}`;
+                      const exactEvidenceUnitId = candidate.sourceUnits.find(
+                        (unit) => unit.text.trim() === judgment.evidenceExcerpt.trim(),
+                      )?.segmentId ?? candidate.sourceUnits.find(
+                        (unit) => unit.text.includes(judgment.evidenceExcerpt.trim()),
+                      )?.segmentId ?? judgment.evidenceSegmentIds[0];
                       return (
                         <article className={`owl-result disposition-${judgment.disposition}`} key={judgment.candidateId}>
                           <header>
                             <div>
-                              <span>Reading leaf {String(judgmentIndex + 1).padStart(2, "0")} · {judgment.disposition} relationship · {judgment.confidence} confidence</span>
+                              <span className="owl-verdict">Reading leaf {String(judgmentIndex + 1).padStart(2, "0")} · {dispositionLabels[judgment.disposition]} · {judgment.confidence} confidence</span>
                               <h4>{candidate.author} · {candidate.workTitle}</h4>
                               <p>{candidate.citationLabel}</p>
                               <p className="candidate-catalogue-line">
@@ -2568,11 +2664,6 @@ export function ResearchWorkbench() {
                           <div className="owl-orientation">
                             <span>At a glance</span>
                             <p>{judgment.englishOrientation}</p>
-                          </div>
-
-                          <div className="owl-key-passage">
-                            <span>Crucial original-language passage</span>
-                            <blockquote>{judgment.evidenceExcerpt}</blockquote>
                           </div>
 
                           <div className="owl-judgment">
@@ -2592,13 +2683,20 @@ export function ResearchWorkbench() {
                           </div>
 
                           <div className="owl-source">
-                            <span>Passage in context · original {candidate.languageLabel}</span>
+                            <span>Passage in context · the owl&apos;s crucial {candidate.languageLabel} unit is highlighted</span>
                             {candidate.sourceUnits.map((unit) => (
                               <p
-                                className={judgment.evidenceSegmentIds.includes(unit.segmentId) ? "evidence" : unit.matched ? "matched" : ""}
+                                className={unit.segmentId === exactEvidenceUnitId
+                                  ? "evidence"
+                                  : judgment.evidenceSegmentIds.includes(unit.segmentId) || unit.matched
+                                    ? "matched"
+                                    : ""}
                                 key={unit.segmentId}
                               >
-                                <small>{unit.citationLabel}</small>{unit.text}
+                                <small>{unit.citationLabel}</small>
+                                {unit.segmentId === exactEvidenceUnitId
+                                  ? highlightedEvidenceText(unit.text, judgment.evidenceExcerpt)
+                                  : unit.text}
                               </p>
                             ))}
                           </div>

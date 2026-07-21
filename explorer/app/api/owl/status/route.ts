@@ -67,7 +67,7 @@ export async function POST(request: Request) {
         promptVersion: owlAdjudicationPromptVersion,
         status: result.status,
         notice:
-          "The owl is still comparing the passages to the approved inquiry. The app is checking its receipt without changing the retrieval run.",
+          "The owl is still comparing the passages to the approved inquiry. The reading desk is checking its receipt without changing the retrieval run.",
       }, { status: 202 });
     }
     if (result.kind === "ready") {

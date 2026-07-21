@@ -30,8 +30,10 @@ test("badger folios expose scholar editing, pinning, set-aside, restoration, and
 
 test("badger waiting language is honest about timing and table stability", () => {
   assert.match(source, /This can take several minutes/);
-  assert.match(source, /checking back without holding one fragile/);
-  assert.match(source, /your approved fox table will not change/i);
+  assert.match(source, /background receipt instead of depending on one/);
+  assert.match(source, /Your approved table stays fixed/i);
+  assert.match(source, /stretch your spine/i);
+  assert.match(source, /Folio.*from table card/i);
 });
 
 test("a proposal can run an inspectable diagnostic shelf check without changing approval", () => {

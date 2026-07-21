@@ -31,7 +31,7 @@ test("server-renders the research instrument", async () => {
   assert.match(html, /Yes—this looks like my question/);
   assert.match(html, /Leaving home/);
   assert.match(html, /Set-aside stack/);
-  assert.match(html, /Corpus boundary/);
+  assert.match(html, /What this demo shelf can cover/);
   assert.match(html, /The model proposes/);
   assert.doesNotMatch(html, /Your site is taking shape|react-loading-skeleton/);
 
@@ -65,6 +65,7 @@ test("keeps the live query contract topic-general", async () => {
   assert.match(route, /family title must be unique/i);
   assert.match(route, /Focus of Inquiry/);
   assert.match(route, /immediate scholarly judgment/i);
+  assert.match(route, /I’m done — take me to the table/);
   assert.doesNotMatch(route, /candidatePacket|six was perfect|passages\.map/);
 
   const client = await readFile(new URL("../app/research-workbench.tsx", import.meta.url), "utf8");
@@ -73,6 +74,10 @@ test("keeps the live query contract topic-general", async () => {
   assert.match(client, /listening for the shape of the question/i);
   assert.match(client, /prewritten documentation, not a live model response/i);
   assert.match(client, /present map remains safe/i);
+  assert.match(client, /describeTablePlacements/);
+  assert.match(client, /Probably not what you need/);
+  assert.match(client, /highlightedEvidenceText/);
+  assert.doesNotMatch(client, /Crucial original-language passage/);
   assert.doesNotMatch(client, /OPENAI_API_KEY|NEXT_PUBLIC_OPENAI|VITE_OPENAI/);
 
   const envExample = await readFile(new URL("../.env.example", import.meta.url), "utf8");
