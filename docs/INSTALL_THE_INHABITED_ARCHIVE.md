@@ -1,5 +1,10 @@
 # Install The Inhabited Archive
 
+For a zero-install tour, open the public no-key demonstration:
+<https://inhabited-archive.shaytaki.chatgpt.site>. It exposes the saved journey
+and the complete hosted Latin shelf without a project-owned model key. Asking a
+new live question requires a local installation and your own OpenAI API key.
+
 This guide separates three things that are easy to blur together:
 
 1. **The librarians:** the fox, badger, owl, interface, and reproducibility contracts in `explorer/`.
@@ -16,10 +21,14 @@ identifiers, and catalogue metadata in the shared schema.
 - Node.js 22.13 or later
 - pnpm
 - Python 3 for rebuilding or exporting the demonstration shelf
-- An OpenAI API key for live fox, badger, owl, and working-translation calls
+- An OpenAI API key only for live fox, badger, owl, and working-translation calls
 
 The saved demonstration can be opened without an API key. Live original
 questions require one.
+
+The submission was verified on macOS. Its ordinary Node and Cloudflare tooling
+should also run on Linux; Windows users should prefer WSL. Native Windows has
+not been independently verified for this release.
 
 ## 2. Install the application
 
@@ -48,12 +57,21 @@ evaluation pass.
 
 ## 3. Prepare the demonstration shelf
 
-The public repository describes and rebuilds the serving shelf rather than
-tracking a large generated database. Choose one route.
+The public repository does not place a generated database in Git history.
+Choose the small release download for the fastest setup, or rebuild it from the
+pinned Perseus source to verify the complete provenance chain.
 
 ### Route A: use the separately downloaded serving shelf
 
-Place the verified release asset at:
+Download
+[`inhabited-archive-latin-demo-shelf-v1.sql.gz`](https://github.com/shaycranmer/inhabited-archive/releases/download/v0.1.0-build-week/inhabited-archive-latin-demo-shelf-v1.sql.gz)
+from the Build Week release. Its compressed SHA-256 is:
+
+```text
+3187930941d58ba1fba2220e5b5fe4c3355c8ab12b0767eb56b49ed9bde7ec01
+```
+
+Decompress it and place the SQL file at:
 
 ```text
 derived/demo_latin/perseus_latin_demo_v1.d1.sql
@@ -65,9 +83,9 @@ Then, from `explorer/`, load it into the local D1 database:
 pnpm run shelf:import-local
 ```
 
-Check the release receipt before importing; the reviewed serving shelf has a
-published SHA-256 fingerprint. A compressed download must be decompressed to
-the exact `.d1.sql` path above.
+The import contains 30 works and 61,651 provenance-locked passages. The app
+checks its internal corpus receipt before using it; a file at the right path
+without the right receipt is rejected.
 
 ### Route B: rebuild from the pinned Perseus source
 
@@ -105,6 +123,26 @@ library contract:
 ```bash
 pnpm run test
 ```
+
+Expected verification for this release: a successful production build and 43
+passing application tests. The broader research-infrastructure tests can also
+be run from the repository root with:
+
+```bash
+python3 -m unittest discover -s tests -v
+```
+
+## What each mode can do
+
+| Mode | API key | Latin shelf | What it demonstrates |
+|---|---:|---:|---|
+| Public hosted tour | No | Included | Saved scholar journey, interface, sources, receipts, and method |
+| Local interface only | No | Optional | No-key documentation and direct interface inspection |
+| Local full shelf | No | Yes | Deterministic Latin retrieval and corpus receipts |
+| Local live inquiry | Yes | Yes | Complete fox → badger → retrieval → owl journey for a new question |
+
+The key pays only for model reasoning. Shelf search, scope enforcement,
+deduplication, and receipt generation are deterministic application work.
 
 ## 5. Connect another library
 

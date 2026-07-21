@@ -8,6 +8,13 @@ Planned track: Education
 
 Working submission name: **Number Rants Explorer**
 
+Final submission name: **The Inhabited Archive**
+
+Final due-day state: complete end-to-end Latin vertical slice with 30 works,
+61,651 passages, 43 passing application tests, a downloadable serving shelf,
+and a public no-key demonstration. The dated sections below preserve what was
+known and planned when this baseline was first recorded.
+
 ## Purpose
 
 This document separates the research project that existed before OpenAI Build
@@ -75,8 +82,8 @@ library was created from nothing during Build Week.
 
 ## New Submitted Product
 
-The Build Week submission will be evaluated as a newly implemented vertical
-product slice. Planned core functionality:
+The Build Week submission is a newly implemented vertical product slice. Its
+completed core functionality:
 
 1. accept a natural-language historical question in English;
 2. use GPT-5.6 to produce an inspectable, structured query constellation;
@@ -98,9 +105,9 @@ replace, define, or shrink the full research corpus.
 Shay owns the research question, inclusion criteria, interpretive judgments,
 product priorities, rights decisions, and final scholarly adjudication.
 
-Codex assists with repository construction, data and application engineering,
+Codex assisted with repository construction, data and application engineering,
 test design, documentation, provenance checks, implementation alternatives,
-and preparation of the runnable submission. GPT-5.6 will be used inside the
+and preparation of the runnable submission. GPT-5.6 is used inside the
 product for structured research-question expansion and evidence-bounded
 classification or explanation. Deterministic retrieval and source records
 remain inspectable independently of model output.

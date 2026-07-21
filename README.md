@@ -1,11 +1,83 @@
-# Number Rants: A Multilingual Qualitative-Number Corpus
+# The Inhabited Archive
 
-Status: active digital-humanities research infrastructure
+> Translate the question. Not the library.
+
+The Inhabited Archive is an inspectable AI research desk for bounded historical
+corpora. A scholar asks a question in the language they know; a fox makes the
+question explicit, a badger adapts the approved concept map to the installed
+library's source language, deterministic retrieval finds literal passages, and
+an owl ranks the resulting reading list without replacing human interpretation.
+
+This repository contains the complete OpenAI Build Week Education submission
+and its research foundation, Number Rants.
+
+- **Try the no-key demonstration:** <https://inhabited-archive.shaytaki.chatgpt.site>
+- **Install it yourself:** [`docs/INSTALL_THE_INHABITED_ARCHIVE.md`](docs/INSTALL_THE_INHABITED_ARCHIVE.md)
+- **Download the 30-work Latin serving shelf:** [Build Week release](https://github.com/shaycranmer/inhabited-archive/releases/tag/v0.1.0-build-week)
+- **Inspect the application:** [`explorer/`](explorer/)
+
+## What the scholar experiences
+
+```text
+English research question
+→ fox clarification and editable concept table
+→ scholar-approved historical and genre scope
+→ Latin badger folios with reversible inclusions and exclusions
+→ deterministic, deduplicated retrieval from a declared 30-work shelf
+→ owl reading leaves with original text, context, caveats, and working translation
+→ linked receipts preserved across reruns
+```
+
+Technical version: GPT-5.6 performs bounded structured reasoning at the fox,
+badger, and owl desks. Application code—not the model—enforces catalogue scope,
+executes lexical retrieval, deduplicates overlapping passages, verifies source
+identities, and preserves reproducibility receipts.
+
+Plain-language version: the librarians may suggest how to ask, search, and
+prioritize, but they cannot quietly invent a book, erase an inconvenient hit,
+or pretend that one small shelf represents all of history.
+
+## Build Week contribution
+
+Number Rants began before the July 13 submission period as a research question,
+source-discovery effort, early codebook, and growing local corpus. There was no
+public or judge-runnable application, GPT-5.6 integration, language-librarian
+workflow, rights-cleared demo shelf, or end-to-end evidence interface.
+
+During Build Week, Shay Cranmer and Codex created The Inhabited Archive's
+complete runnable vertical slice: the live fox and concept table; historical,
+genre, and tradition scope; Latin badger adaptation; the reviewed 30-work
+Perseus shelf; deterministic retrieval and overlap deduplication; immutable run
+history; owl adjudication; labeled machine translation; visual system; safety
+gates; tests; installation path; and hosted demonstration. GPT-5.6 supplies the
+runtime librarians' structured reasoning. Codex accelerated architecture,
+implementation, evaluation, visual iteration, documentation, provenance work,
+and due-day hardening under Shay's scholarly and product direction.
+
+The dated history begins with the conservative pre-submission inventory in
+[`BUILD_WEEK_BASELINE.md`](BUILD_WEEK_BASELINE.md). That file and the Git commit
+history distinguish inherited research from work added during the official
+submission window.
+
+## Quick local start
+
+Requirements: Node.js 22.13 or later and pnpm. The interface opens without a
+secret; live original questions require an OpenAI API key.
+
+```bash
+cd explorer
+pnpm install
+pnpm run dev
+```
+
+Open <http://localhost:3000>. For the full Latin retrieval shelf and live model
+setup, follow the [installation manual](docs/INSTALL_THE_INHABITED_ARCHIVE.md).
+
+## Research foundation: Number Rants
+
+Status: active multilingual digital-humanities research infrastructure
 
 Started: 2026-07-09
-
-Current phase: acquisition complete for the first major waves; canonical
-normalization and cross-lingual retrieval in progress
 
 ## The Question
 
@@ -216,15 +288,14 @@ source records. See `LICENSE`, `LICENSE-DOCUMENTATION.md`,
 
 ## Roadmap
 
-1. Build canonical v2 for Corpus Corporum including the 139 recovered texts.
-2. Add versioned adapters for OpenITI, Sefaria, PTA, Coptic SCRIPTORIUM, and
+1. Add a complete Greek shelf and language specialist after ratification.
+2. Export and restore durable scholar workspaces and linked retrieval history.
+3. Evaluate retrieval recall, ranking precision, translation quality, and
+   cross-lingual blind spots against a human-adjudicated set.
+4. Add versioned adapters for OpenITI, Sefaria, PTA, Coptic SCRIPTORIUM, and
    BHSA without collapsing editions or parallel representations.
-3. Implement conversational query planning and language-specialist expansion.
-4. Rank qualitative interpretation above incidental quantities such as “six
-   donkeys.”
-5. Create an auditable adjudication set and evaluate recall, precision, and
-   cross-lingual blind spots.
-6. Publish a rights-safe project site and research interface.
+5. Share a reusable adapter toolkit so scholars can place the librarians in
+   front of other bounded, rights-cleared digital libraries.
 
 ## Project Character
 
