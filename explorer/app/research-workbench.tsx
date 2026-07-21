@@ -12,6 +12,18 @@ import {
 } from "../lib/adaptation-plan";
 import type { ShelfPreviewResponse } from "../lib/shelf-preview";
 import {
+  candidateForJudgment,
+  translationForCandidate,
+  type OwlPendingResponse,
+  type OwlResponse,
+  type OwlRunRecord,
+  type TranslationAddendum,
+} from "../lib/owl-adjudication";
+import type {
+  RetrievalRun,
+  TranslationPreference,
+} from "../lib/retrieval-run";
+import {
   documentedQuestion,
   documentedWorkspace,
   type BoundaryCard,
@@ -59,11 +71,13 @@ type BoundaryDraft = {
 
 type ProposalDraft = {
   proposalId: string;
-  latinExpression: string;
+  sourceLanguageExpression: string;
   englishSense: string;
   rationale: string;
   searchForms: string;
 };
+
+type OwlStage = "retrieving" | "starting" | "queued" | "in_progress";
 
 const initialWorkspace = documentedWorkspace();
 
@@ -74,9 +88,9 @@ const revisionLoadingNotes = [
 ];
 
 const badgerLoadingNotes = [
-  "The badger is matching each fox card to a Latin folio.",
+  "The badger is matching each fox card to a language folio.",
   "He’s separating direct wording from historical associations.",
-  "A broad Latin word has just been asked to explain itself.",
+  "A broad source-language word has just been asked to explain itself.",
   "He’s listing the forms a literal catalogue might otherwise miss.",
   "False positives are being written down before they can look impressive.",
   "The source cards remain fixed while the folios take shape.",
@@ -158,10 +172,10 @@ function BadgerLoadingVignette({ status }: { status: "starting" | "queued" | "in
       </div>
       <div>
         <span>{status === "starting"
-          ? "The Latin desk is opening"
+          ? "The language desk is opening"
           : status === "queued"
             ? "The badger has your folios in the queue"
-            : "The Latin desk is working"}</span>
+            : "The language desk is working"}</span>
         <p key={noteIndex}>{badgerLoadingNotes[noteIndex]}</p>
         <small>
           This can take several minutes. The app is checking back without holding one fragile
@@ -172,12 +186,18 @@ function BadgerLoadingVignette({ status }: { status: "starting" | "queued" | "in
   );
 }
 
-function ShelfPreviewResult({ preview }: { preview: ShelfPreview }) {
+function ShelfPreviewResult({
+  preview,
+  languageLabel,
+}: {
+  preview: ShelfPreview;
+  languageLabel: string;
+}) {
   return (
     <section className={`shelf-preview-result ${preview.status}`} aria-label="Diagnostic shelf preview">
       <header>
         <div>
-          <span>Literal shelf check · not an owl judgment</span>
+          <span>Literal coverage check · not your inquiry results</span>
           <strong>
             {preview.totalSegmentMatches.toLocaleString()} passages across{" "}
             {preview.totalDocumentMatches.toLocaleString()} works
@@ -185,6 +205,12 @@ function ShelfPreviewResult({ preview }: { preview: ShelfPreview }) {
         </div>
         <small>{preview.queryForms.join(" · ")}</small>
       </header>
+
+      <p className="shelf-coverage-explanation">
+        These exact forms appear in the counts above. Full retrieval will combine your
+        approved concepts, relationships, scope, and exclusions before the owl judges
+        which passages may actually answer your question.
+      </p>
 
       {preview.basketMatches?.length ? (
         <div className="shelf-baskets" aria-label="Matches by shelf basket">
@@ -198,20 +224,23 @@ function ShelfPreviewResult({ preview }: { preview: ShelfPreview }) {
       ) : null}
 
       {preview.samples.length ? (
-        <div className="shelf-samples">
-          {preview.samples.map((sample) => (
-            <article key={sample.segmentId}>
-              <span>{sample.author} · {sample.workTitle} · {sample.citationLabel}</span>
-              <p>{sample.snippet}</p>
-              <div>
-                {sample.sourceUrl ? (
-                  <a href={sample.sourceUrl} target="_blank" rel="noreferrer">Inspect source ↗</a>
-                ) : null}
-                <small title={sample.sourceSha256}>Source receipt {sample.sourceSha256.slice(0, 12)}…</small>
-              </div>
-            </article>
-          ))}
-        </div>
+        <details className="shelf-sample-disclosure">
+          <summary>Inspect sample occurrences — most useful if you read {languageLabel}</summary>
+          <div className="shelf-samples">
+            {preview.samples.map((sample) => (
+              <article key={sample.segmentId}>
+                <span>{sample.author} · {sample.workTitle} · {sample.citationLabel}</span>
+                <p>{sample.snippet}</p>
+                <div>
+                  {sample.sourceUrl ? (
+                    <a href={sample.sourceUrl} target="_blank" rel="noreferrer">Inspect source ↗</a>
+                  ) : null}
+                  <small title={sample.sourceSha256}>Source receipt {sample.sourceSha256.slice(0, 12)}…</small>
+                </div>
+              </article>
+            ))}
+          </div>
+        </details>
       ) : (
         <p className="shelf-empty">No literal matches appeared on this selective shelf.</p>
       )}
@@ -228,6 +257,37 @@ function ShelfPreviewResult({ preview }: { preview: ShelfPreview }) {
         ) : null}
       </details>
     </section>
+  );
+}
+
+function OwlWaitingVignette({ stage }: { stage: OwlStage }) {
+  const copy = {
+    retrieving: {
+      label: "Searching the declared shelf",
+      text: "The application is executing the approved folios and gathering literal candidates. No relevance judgment has run yet.",
+    },
+    starting: {
+      label: "Preparing the owl’s evidence packet",
+      text: "Overlapping passages are becoming bounded reading units while the fox map, language folios, and source receipts remain attached.",
+    },
+    queued: {
+      label: "The owl has your passages in the queue",
+      text: "The complete inquiry snapshot is fixed. The app is checking a background receipt without changing the retrieved texts.",
+    },
+    in_progress: {
+      label: "The owl is comparing the passages to your question",
+      text: "He is checking relationships, uncertainty, quotation, and incidental matches before arranging a reading list.",
+    },
+  }[stage];
+  return (
+    <div className="owl-waiting" data-stage={stage} role="status" aria-live="polite" aria-atomic="true">
+      <div className="owl-waiting-mark" aria-hidden="true"><span /><span /><span /></div>
+      <div>
+        <span>{copy.label}</span>
+        <p>{copy.text}</p>
+        <small>The original question, approved folios, candidate IDs, and corpus receipt travel together.</small>
+      </div>
+    </div>
   );
 }
 
@@ -455,9 +515,20 @@ export function ResearchWorkbench() {
   const [proposalDraft, setProposalDraft] = useState<ProposalDraft | null>(null);
   const [shelfPreviewLoadingId, setShelfPreviewLoadingId] = useState<string | null>(null);
   const [shelfPreviewErrors, setShelfPreviewErrors] = useState<Record<string, string>>({});
+  const [translationPreference, setTranslationPreference] = useState<TranslationPreference>("auto_strong");
+  const [owlRuns, setOwlRuns] = useState<OwlRunRecord[]>([]);
+  const [activeOwlRunId, setActiveOwlRunId] = useState<string | null>(null);
+  const [owlStage, setOwlStage] = useState<OwlStage | null>(null);
+  const [owlError, setOwlError] = useState("");
+  const [translationLoadingId, setTranslationLoadingId] = useState<string | null>(null);
+  const [translationErrors, setTranslationErrors] = useState<Record<string, string>>({});
   const badgerAbortRef = useRef<AbortController | null>(null);
+  const owlAbortRef = useRef<AbortController | null>(null);
 
-  useEffect(() => () => badgerAbortRef.current?.abort(), []);
+  useEffect(() => () => {
+    badgerAbortRef.current?.abort();
+    owlAbortRef.current?.abort();
+  }, []);
 
   function commit(
     nextWorkspace: QueryWorkspace,
@@ -467,6 +538,8 @@ export function ResearchWorkbench() {
   ) {
     badgerAbortRef.current?.abort();
     badgerAbortRef.current = null;
+    owlAbortRef.current?.abort();
+    owlAbortRef.current = null;
     setReceipt({
       message,
       viewCardId,
@@ -484,6 +557,8 @@ export function ResearchWorkbench() {
     setProposalDraft(null);
     setShelfPreviewLoadingId(null);
     setShelfPreviewErrors({});
+    setOwlStage(null);
+    setOwlError("");
   }
 
   function undoReceipt() {
@@ -541,6 +616,12 @@ export function ResearchWorkbench() {
       setExpandedFolioIds([]);
       setShelfPreviewLoadingId(null);
       setShelfPreviewErrors({});
+      setOwlRuns([]);
+      setActiveOwlRunId(null);
+      setOwlStage(null);
+      setOwlError("");
+      setTranslationLoadingId(null);
+      setTranslationErrors({});
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "The fox could not begin the inquiry.");
       setNotice("The live inquiry did not begin. You can return to the question or open the clearly labeled saved example.");
@@ -1002,6 +1083,8 @@ export function ResearchWorkbench() {
   function openDocumentedConversation() {
     badgerAbortRef.current?.abort();
     badgerAbortRef.current = null;
+    owlAbortRef.current?.abort();
+    owlAbortRef.current = null;
     const exampleWorkspace = documentedWorkspace();
     setQuestion(documentedQuestion);
     setWorkspace(exampleWorkspace);
@@ -1022,6 +1105,12 @@ export function ResearchWorkbench() {
     setExpandedFolioIds([]);
     setShelfPreviewLoadingId(null);
     setShelfPreviewErrors({});
+    setOwlRuns([]);
+    setActiveOwlRunId(null);
+    setOwlStage(null);
+    setOwlError("");
+    setTranslationLoadingId(null);
+    setTranslationErrors({});
     setError("");
     requestAnimationFrame(() => {
       document.getElementById("fox-conversation")?.focus();
@@ -1079,7 +1168,7 @@ export function ResearchWorkbench() {
     setBadgerLoading(true);
     setBadgerJobStatus("starting");
     setBadgerError("");
-    setNotice("The concept map is approved. The Latin badger is preparing an inspectable draft; no corpus search has run.");
+    setNotice("The concept map is approved. The badger is preparing an inspectable language draft; no corpus search has run.");
     requestAnimationFrame(() => {
       document.getElementById("badger-room")?.scrollIntoView({ behavior: "smooth", block: "start" });
     });
@@ -1101,7 +1190,7 @@ export function ResearchWorkbench() {
           | (BadgerResponse & { error?: string })
           | (BadgerPendingResponse & { error?: string });
         if (!response.ok && response.status !== 202) {
-          throw new Error(result.error || "The Latin badger could not prepare the folios.");
+          throw new Error(result.error || "The badger could not prepare the language folios.");
         }
         if (response.status === 202) {
           const pending = result as BadgerPendingResponse;
@@ -1128,7 +1217,7 @@ export function ResearchWorkbench() {
     } catch (caught) {
       if (controller.signal.aborted) return;
       setBadgerError(
-        caught instanceof Error ? caught.message : "The Latin badger could not prepare the folios.",
+        caught instanceof Error ? caught.message : "The badger could not prepare the language folios.",
       );
     } finally {
       if (badgerAbortRef.current === controller) {
@@ -1187,7 +1276,7 @@ export function ResearchWorkbench() {
   function beginProposalEdit(proposal: AdaptationProposal) {
     setProposalDraft({
       proposalId: proposal.id,
-      latinExpression: proposal.latinExpression,
+      sourceLanguageExpression: proposal.sourceLanguageExpression,
       englishSense: proposal.englishSense,
       rationale: proposal.rationale,
       searchForms: proposal.searchForms.join(", "),
@@ -1196,7 +1285,7 @@ export function ResearchWorkbench() {
 
   function saveProposalEdit(folioId: string) {
     if (!proposalDraft) return;
-    const latinExpression = proposalDraft.latinExpression.trim();
+    const sourceLanguageExpression = proposalDraft.sourceLanguageExpression.trim();
     const englishSense = proposalDraft.englishSense.trim();
     const rationale = proposalDraft.rationale.trim();
     if (!englishSense || !rationale) return;
@@ -1213,7 +1302,7 @@ export function ResearchWorkbench() {
         proposal.id === proposalDraft.proposalId
           ? {
               ...proposal,
-              latinExpression,
+              sourceLanguageExpression,
               englishSense,
               rationale,
               searchForms,
@@ -1244,18 +1333,18 @@ export function ResearchWorkbench() {
       });
       const result = (await response.json()) as ShelfPreviewResponse & { error?: string };
       if (!response.ok) {
-        throw new Error(result.error || "The Latin shelf could not test these forms.");
+        throw new Error(result.error || "The installed shelf could not check these forms.");
       }
       setBadgerPlan((current) => current ? attachShelfPreview(current, result) : current);
       setNotice(
-        `The Latin shelf tested ${proposal.searchForms.length === 1 ? "one literal form" : `${proposal.searchForms.length} literal forms`}. These are occurrence receipts, not relevance judgments.`,
+        `The shelf checked ${proposal.searchForms.length === 1 ? "one literal form" : `${proposal.searchForms.length} literal forms`}. These are coverage receipts for the forms alone, not results for the full inquiry.`,
       );
     } catch (caught) {
       setShelfPreviewErrors((current) => ({
         ...current,
         [proposal.id]: caught instanceof Error
           ? caught.message
-          : "The Latin shelf could not test these forms.",
+          : "The installed shelf could not check these forms.",
       }));
     } finally {
       setShelfPreviewLoadingId(null);
@@ -1271,6 +1360,166 @@ export function ResearchWorkbench() {
     if (approving) {
       setExpandedFolioIds((current) => current.filter((id) => id !== folioId));
       setProposalDraft(null);
+    }
+  }
+
+  function upsertOwlRun(record: OwlRunRecord) {
+    setOwlRuns((current) => {
+      const existing = current.findIndex((item) => item.retrieval.runId === record.retrieval.runId);
+      if (existing < 0) return [...current, record];
+      return current.map((item, index) => index === existing ? record : item);
+    });
+  }
+
+  async function adjudicateRetrievalRun(run: RetrievalRun, controller: AbortController) {
+    if (!run.candidates.length) return;
+    setOwlStage("starting");
+    let responseId = "";
+    while (!controller.signal.aborted) {
+      const response = await fetch(responseId ? "/api/owl/status" : "/api/owl", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        signal: controller.signal,
+        body: JSON.stringify({ run, responseId: responseId || undefined }),
+      });
+      const result = (await response.json()) as
+        | (OwlResponse & { error?: string })
+        | (OwlPendingResponse & { error?: string });
+      if (!response.ok && response.status !== 202) {
+        throw new Error(result.error || "The owl could not adjudicate this retrieval run.");
+      }
+      if (response.status === 202) {
+        const pending = result as OwlPendingResponse;
+        if (!pending.responseId) throw new Error("The owl returned no usable job receipt.");
+        responseId = pending.responseId;
+        setOwlStage(pending.status);
+        setNotice(pending.notice);
+        await new Promise((resolve) => window.setTimeout(resolve, 3000));
+        continue;
+      }
+      const completed = result as OwlResponse;
+      setOwlRuns((current) => current.map((record) =>
+        record.retrieval.runId === run.runId
+          ? { ...record, adjudication: completed.adjudication }
+          : record
+      ));
+      setNotice(completed.notice);
+      setOwlStage(null);
+      requestAnimationFrame(() => {
+        document.getElementById("owl-room")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+      return;
+    }
+  }
+
+  async function startRetrievalRun() {
+    if (!badgerPlan || badgerPlan.approvalStatus !== "approved" || owlStage) return;
+    owlAbortRef.current?.abort();
+    const controller = new AbortController();
+    owlAbortRef.current = controller;
+    setOwlStage("retrieving");
+    setOwlError("");
+    requestAnimationFrame(() => {
+      document.getElementById("owl-room")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+    try {
+      const response = await fetch("/api/retrieve", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        signal: controller.signal,
+        body: JSON.stringify({
+          approved: true,
+          question,
+          workspace,
+          plan: badgerPlan,
+          translationPreference,
+          parentRunId: activeOwlRunId || undefined,
+        }),
+      });
+      const result = (await response.json()) as {
+        run?: RetrievalRun;
+        notice?: string;
+        error?: string;
+      };
+      if (!response.ok || !result.run) {
+        throw new Error(result.error || "The archive could not execute the approved search plan.");
+      }
+      const record: OwlRunRecord = {
+        retrieval: result.run,
+        adjudication: null,
+        translationAddenda: [],
+      };
+      upsertOwlRun(record);
+      setActiveOwlRunId(result.run.runId);
+      setNotice(result.notice || "The archive prepared a retrieval run.");
+      if (!result.run.candidates.length) {
+        setOwlStage(null);
+        return;
+      }
+      await adjudicateRetrievalRun(result.run, controller);
+    } catch (caught) {
+      if (controller.signal.aborted) return;
+      setOwlError(
+        caught instanceof Error ? caught.message : "The owl workflow could not finish safely.",
+      );
+      setOwlStage(null);
+    } finally {
+      if (owlAbortRef.current === controller) owlAbortRef.current = null;
+    }
+  }
+
+  async function retryOwlRun(run: RetrievalRun) {
+    if (owlStage) return;
+    owlAbortRef.current?.abort();
+    const controller = new AbortController();
+    owlAbortRef.current = controller;
+    setActiveOwlRunId(run.runId);
+    setOwlError("");
+    try {
+      await adjudicateRetrievalRun(run, controller);
+    } catch (caught) {
+      if (controller.signal.aborted) return;
+      setOwlError(caught instanceof Error ? caught.message : "The owl could not resume this run.");
+      setOwlStage(null);
+    } finally {
+      if (owlAbortRef.current === controller) owlAbortRef.current = null;
+    }
+  }
+
+  async function requestWorkingTranslation(record: OwlRunRecord, candidateId: string) {
+    const loadingId = `${record.retrieval.runId}:${candidateId}`;
+    if (translationLoadingId) return;
+    setTranslationLoadingId(loadingId);
+    setTranslationErrors((current) => ({ ...current, [loadingId]: "" }));
+    try {
+      const response = await fetch("/api/translate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ run: record.retrieval, candidateId }),
+      });
+      const result = (await response.json()) as {
+        addendum?: TranslationAddendum;
+        notice?: string;
+        error?: string;
+      };
+      if (!response.ok || !result.addendum) {
+        throw new Error(result.error || "The working translation could not be prepared.");
+      }
+      setOwlRuns((current) => current.map((item) =>
+        item.retrieval.runId === record.retrieval.runId
+          ? { ...item, translationAddenda: [...item.translationAddenda, result.addendum!] }
+          : item
+      ));
+      setNotice(result.notice || "A working translation addendum was attached.");
+    } catch (caught) {
+      setTranslationErrors((current) => ({
+        ...current,
+        [loadingId]: caught instanceof Error
+          ? caught.message
+          : "The working translation could not be prepared.",
+      }));
+    } finally {
+      setTranslationLoadingId(null);
     }
   }
 
@@ -1294,6 +1543,7 @@ export function ResearchWorkbench() {
     : focusTerm
       ? { kind: "concept" as const, label: focusTerm.label, familyTitle: familyWithFocusedTerm!.title }
       : null;
+  const activeOwlRecord = owlRuns.find((record) => record.retrieval.runId === activeOwlRunId) ?? null;
 
   return (
     <main>
@@ -1792,11 +2042,11 @@ export function ResearchWorkbench() {
             disabled={badgerLoading || Boolean(badgerPlan)}
           >
             {badgerLoading
-              ? "Walking to the Latin desk…"
+              ? "Walking to the language desk…"
               : badgerPlan
                 ? "Map handed to the badger"
                 : mapApproved
-                  ? "Try the Latin handoff again"
+                  ? "Try the language handoff again"
                   : "Yes—this looks like my question"}
           </button>
           <button className="keep-working" type="button" onClick={focusTableFox}>Keep working with the fox</button>
@@ -1809,11 +2059,11 @@ export function ResearchWorkbench() {
           <div className="badger-room-inner">
             <header className="badger-room-heading">
               <div>
-                <p className="eyebrow">At the Latin badger&apos;s desk</p>
+                <p className="eyebrow">At the badger&apos;s language desk</p>
                 <h2 id="badger-room-title">Let&apos;s see what your question becomes here.</h2>
               </div>
               <p>
-                Each folio belongs to one fox card. Open it to inspect the Latin proposals,
+                Each folio belongs to one fox card. Open it to inspect the source-language proposals,
                 change the badger&apos;s wording, pin what must remain, or set a suggestion aside.
               </p>
             </header>
@@ -1835,13 +2085,15 @@ export function ResearchWorkbench() {
                   <strong>Draft proposals · literal shelf checks remain separate from relevance judgment</strong>
                 </div>
 
+                <div className="badger-folio-margin" aria-hidden="true" />
+
                 <div className="folio-stack">
                   {badgerPlan.folios.map((folio) => {
                     const expanded = expandedFolioIds.includes(folio.id);
                     const summary = summarizeFolio(folio);
                     const activeCount = folio.proposals.filter((proposal) => proposal.active).length;
                     return (
-                      <article className={`badger-folio ${expanded ? "expanded" : ""} ${folio.status}`} key={folio.id}>
+                      <article className={`badger-folio confidence-${folio.overallConfidence} ${expanded ? "expanded" : ""} ${folio.status}`} key={folio.id}>
                         <button
                           className="folio-cover"
                           type="button"
@@ -1884,13 +2136,13 @@ export function ResearchWorkbench() {
                                 const disclosureOnly = proposal.retrievalEffect === "disclose_only";
                                 return (
                                   <article
-                                    className={`badger-proposal ${proposal.active ? "active" : "inactive"} category-${proposal.category}`}
+                                    className={`badger-proposal confidence-${proposal.confidence} ${proposal.active ? "active" : "inactive"} category-${proposal.category}`}
                                     key={proposal.id}
                                   >
                                     <header>
                                       <div>
                                         <span>{categoryLabels[proposal.category]} · from “{proposal.sourceConceptLabel}”</span>
-                                        <strong>{proposal.latinExpression || "No Latin form proposed yet"}</strong>
+                                        <strong>{proposal.sourceLanguageExpression || "No source-language form proposed yet"}</strong>
                                       </div>
                                       <div className="proposal-state">
                                         <span className={`confidence ${proposal.confidence}`}>{proposal.confidence}</span>
@@ -1901,7 +2153,7 @@ export function ResearchWorkbench() {
 
                                     {editing && proposalDraft ? (
                                       <form className="proposal-edit" onSubmit={(event) => { event.preventDefault(); saveProposalEdit(folio.id); }}>
-                                        <label>Latin expression<input value={proposalDraft.latinExpression} onChange={(event) => setProposalDraft({ ...proposalDraft, latinExpression: event.target.value })} /></label>
+                                        <label>Source-language expression<input value={proposalDraft.sourceLanguageExpression} onChange={(event) => setProposalDraft({ ...proposalDraft, sourceLanguageExpression: event.target.value })} /></label>
                                         <label>Meaning in ordinary English<textarea rows={2} value={proposalDraft.englishSense} onChange={(event) => setProposalDraft({ ...proposalDraft, englishSense: event.target.value })} /></label>
                                         <label>Why it may help<textarea rows={3} value={proposalDraft.rationale} onChange={(event) => setProposalDraft({ ...proposalDraft, rationale: event.target.value })} /></label>
                                         <label>Literal forms, separated by commas<textarea rows={3} value={proposalDraft.searchForms} onChange={(event) => setProposalDraft({ ...proposalDraft, searchForms: event.target.value })} /></label>
@@ -1938,7 +2190,7 @@ export function ResearchWorkbench() {
                                         ) : null}
 
                                         <p className="verification-note"><span>Evidence status</span>{proposal.verificationNote}</p>
-                                        {proposal.shelfPreview ? <ShelfPreviewResult preview={proposal.shelfPreview} /> : null}
+                                        {proposal.shelfPreview ? <ShelfPreviewResult preview={proposal.shelfPreview} languageLabel={badgerPlan.languageLabel} /> : null}
                                         {shelfPreviewErrors[proposal.id] ? (
                                           <p className="shelf-preview-error" role="alert">{shelfPreviewErrors[proposal.id]}</p>
                                         ) : null}
@@ -1953,8 +2205,8 @@ export function ResearchWorkbench() {
                                               {shelfPreviewLoadingId === proposal.id
                                                 ? "Checking the shelf…"
                                                 : proposal.shelfPreview
-                                                  ? "Test these forms again"
-                                                  : "Test these forms on the shelf"}
+                                                  ? "Check literal coverage again"
+                                                  : "Check literal coverage on this shelf"}
                                             </button>
                                           ) : null}
                                           <button type="button" onClick={() => beginProposalEdit(proposal)}>Edit proposal</button>
@@ -1987,13 +2239,220 @@ export function ResearchWorkbench() {
 
                 <div className={`badger-plan-status ${badgerPlan.approvalStatus}`} aria-live="polite">
                   <div>
-                    <span>{badgerPlan.approvalStatus === "approved" ? "Latin plan approved" : "Scholar review remains open"}</span>
+                    <span>{badgerPlan.approvalStatus === "approved" ? "Search plan approved" : "Scholar review remains open"}</span>
                     <p>{badgerPlan.approvalStatus === "approved"
-                      ? "Every folio is approved. Literal previews may be attached; full multi-term retrieval and owl judgment have not run."
+                      ? owlRuns.length
+                        ? "Every folio is approved. Each search freezes a new receipt; earlier retrieval and owl results remain in connected history."
+                        : "Every folio is approved. Literal previews may be attached; full multi-term retrieval and owl judgment have not run."
                       : "Open each folio, keep what helps, and set aside what does not. Approval belongs to you."}</p>
                   </div>
                   <strong>{badgerPlan.folios.filter((folio) => folio.status === "approved").length} / {badgerPlan.folios.length} folios approved</strong>
                 </div>
+
+                {badgerPlan.approvalStatus === "approved" ? (
+                  <div className="retrieval-launch">
+                    <div>
+                      <span>Working translations</span>
+                      <label htmlFor="translation-preference">How should the owl handle translation?</label>
+                      <select
+                        id="translation-preference"
+                        value={translationPreference}
+                        onChange={(event) => setTranslationPreference(event.target.value as TranslationPreference)}
+                        disabled={Boolean(owlStage)}
+                      >
+                        <option value="auto_strong">Automatic for strong and possible results</option>
+                        <option value="on_demand">On demand only</option>
+                        <option value="off">Off for this run</option>
+                      </select>
+                    </div>
+                    <div>
+                      <p>
+                        The approved fox map and folios will be frozen into a new retrieval receipt.
+                        {activeOwlRecord
+                          ? " This run will link back to the currently viewed run without replacing it."
+                          : " Later revisions will become connected runs rather than overwriting this one."}
+                      </p>
+                      <button type="button" onClick={() => void startRetrievalRun()} disabled={Boolean(owlStage)}>
+                        {owlStage
+                          ? "The archive is working…"
+                          : activeOwlRecord
+                            ? "Run this approved revision"
+                            : "Search this approved plan"}
+                      </button>
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
+          </div>
+        </section>
+      ) : null}
+
+      {owlStage || owlRuns.length ? (
+        <section className={`owl-room ${owlStage ? "owl-working" : "owl-delivered"}`} id="owl-room" aria-labelledby="owl-room-title" aria-busy={Boolean(owlStage)}>
+          <div className="owl-room-art" aria-hidden="true" />
+          <div className="owl-room-inner">
+            <header className="owl-room-heading">
+              <div>
+                <p className="eyebrow">At the owl&apos;s reading desk</p>
+                <h2 id="owl-room-title">Which passages deserve your time?</h2>
+              </div>
+              <p>
+                The complete approved inquiry travels with every candidate. The owl may
+                arrange a reading list and disclose uncertainty; interpretation remains yours.
+              </p>
+            </header>
+
+            {owlStage ? <OwlWaitingVignette stage={owlStage} /> : null}
+
+            {owlError ? (
+              <div className="owl-error" role="alert">
+                <div><strong>The reading list did not finish.</strong><p>{owlError}</p></div>
+                {activeOwlRecord?.retrieval.candidates.length ? (
+                  <button type="button" onClick={() => void retryOwlRun(activeOwlRecord.retrieval)} disabled={Boolean(owlStage)}>
+                    Try the owl again with this fixed run
+                  </button>
+                ) : null}
+              </div>
+            ) : null}
+
+            {owlRuns.length ? (
+              <nav className="retrieval-history" aria-label="Connected retrieval runs">
+                <span>Connected retrieval history</span>
+                <div>
+                  {owlRuns.map((record, index) => (
+                    <button
+                      type="button"
+                      className={record.retrieval.runId === activeOwlRunId ? "active" : ""}
+                      onClick={() => setActiveOwlRunId(record.retrieval.runId)}
+                      key={record.retrieval.runId}
+                    >
+                      Run {index + 1}
+                      <small>
+                        {record.retrieval.parentRunId ? "linked revision" : "first retrieval"} · {record.retrieval.candidates.length} candidates
+                      </small>
+                    </button>
+                  ))}
+                </div>
+              </nav>
+            ) : null}
+
+            {activeOwlRecord ? (
+              <div className="owl-run">
+                <div className="owl-run-receipt">
+                  <div>
+                    <span>Immutable retrieval receipt</span>
+                    <strong>{activeOwlRecord.retrieval.runId}</strong>
+                    <p>
+                      {activeOwlRecord.retrieval.stats.rawMatchCount.toLocaleString()} raw literal matches ·{" "}
+                      {activeOwlRecord.retrieval.stats.deduplicatedCandidateCount.toLocaleString()} deduplicated units ·{" "}
+                      {activeOwlRecord.retrieval.stats.returnedCandidateCount.toLocaleString()} sent forward
+                    </p>
+                  </div>
+                  <details>
+                    <summary>Inspect reproducibility hashes and limits</summary>
+                    <p>Inquiry {activeOwlRecord.retrieval.hashes.inquirySha256}</p>
+                    <p>Language plan {activeOwlRecord.retrieval.hashes.languagePlanSha256}</p>
+                    <p>Candidate packet {activeOwlRecord.retrieval.hashes.candidatePacketSha256}</p>
+                    <p>Complete owl packet {activeOwlRecord.retrieval.hashes.executionPacketSha256}</p>
+                    <p>Corpus content {activeOwlRecord.retrieval.corpusReceipt.contentSha256}</p>
+                    <ul>{activeOwlRecord.retrieval.limitations.map((item) => <li key={item}>{item}</li>)}</ul>
+                  </details>
+                </div>
+
+                {!activeOwlRecord.retrieval.candidates.length ? (
+                  <div className="owl-empty">
+                    <strong>No literal candidates reached the owl.</strong>
+                    <p>This is a preserved zero-result run on the declared selective shelf, not evidence of historical absence.</p>
+                  </div>
+                ) : !activeOwlRecord.adjudication && !owlStage ? (
+                  <div className="owl-ready">
+                    <p>The archive preserved this candidate packet, but it has not received an owl judgment yet.</p>
+                    <button type="button" onClick={() => void retryOwlRun(activeOwlRecord.retrieval)}>Place this packet on the owl&apos;s desk</button>
+                  </div>
+                ) : activeOwlRecord.adjudication ? (
+                  <div className="owl-results">
+                    <div className="owl-results-heading">
+                      <div><span>Source-grounded reading order</span><h3>{activeOwlRecord.adjudication.judgments.length} annotated reading leaves</h3></div>
+                      <p>Strong and possible passages lead. Liminal, unresolved, and incidental material remains inspectable.</p>
+                    </div>
+
+                    {activeOwlRecord.adjudication.judgments.map((judgment, judgmentIndex) => {
+                      const candidate = candidateForJudgment(activeOwlRecord.retrieval, judgment);
+                      if (!candidate) return null;
+                      const translation = translationForCandidate(activeOwlRecord, judgment);
+                      const loadingId = `${activeOwlRecord.retrieval.runId}:${candidate.candidateId}`;
+                      return (
+                        <article className={`owl-result disposition-${judgment.disposition}`} key={judgment.candidateId}>
+                          <header>
+                            <div>
+                              <span>Reading leaf {String(judgmentIndex + 1).padStart(2, "0")} · {judgment.disposition} relationship · {judgment.confidence} confidence</span>
+                              <h4>{candidate.author} · {candidate.workTitle}</h4>
+                              <p>{candidate.citationLabel}</p>
+                            </div>
+                            <strong>Priority {judgment.priority}</strong>
+                          </header>
+
+                          <div className="owl-judgment">
+                            <p className="owl-relationship">{judgment.relationshipSummary}</p>
+                            <p>{judgment.reasoning}</p>
+                            <blockquote>{judgment.evidenceExcerpt}</blockquote>
+                            <small>Evidence units: {judgment.evidenceSegmentIds.join(" · ")}</small>
+                            {judgment.contextNeeded ? (
+                              <p className="context-needed"><strong>More context requested:</strong> {judgment.contextRequest}</p>
+                            ) : null}
+                            {judgment.warnings.length ? (
+                              <details><summary>Owl cautions ({judgment.warnings.length})</summary><ul>{judgment.warnings.map((warning) => <li key={warning}>{warning}</li>)}</ul></details>
+                            ) : null}
+                          </div>
+
+                          <div className="owl-source">
+                            <span>Original {candidate.languageLabel} · authoritative source text</span>
+                            {candidate.sourceUnits.map((unit) => (
+                              <p className={unit.matched ? "matched" : ""} key={unit.segmentId}>
+                                <small>{unit.citationLabel}</small>{unit.text}
+                              </p>
+                            ))}
+                          </div>
+
+                          <div className="owl-orientation">
+                            <span>English orientation</span>
+                            <p>{judgment.englishOrientation}</p>
+                          </div>
+
+                          {translation ? (
+                            <div className="working-translation">
+                              <span>Machine-generated working translation</span>
+                              <p>{translation.workingTranslation}</p>
+                              {translation.translationNotes.length ? <ul>{translation.translationNotes.map((note) => <li key={note}>{note}</li>)}</ul> : null}
+                              <strong>For discovery and triage only. Do not cite this translation. Consult the original text and a scholarly translation or qualified reader before rigorous use.</strong>
+                            </div>
+                          ) : judgment.translationStatus === "available_on_demand" ? (
+                            <div className="translation-on-demand">
+                              <button
+                                type="button"
+                                onClick={() => void requestWorkingTranslation(activeOwlRecord, candidate.candidateId)}
+                                disabled={Boolean(translationLoadingId)}
+                              >
+                                {translationLoadingId === loadingId ? "Preparing a working translation…" : "Generate a working translation"}
+                              </button>
+                              <small>This will create a new machine-translation addendum without changing the owl&apos;s judgment.</small>
+                              {translationErrors[loadingId] ? <p role="alert">{translationErrors[loadingId]}</p> : null}
+                            </div>
+                          ) : (
+                            <p className="translation-off">Working translation was turned off for this retrieval run.</p>
+                          )}
+
+                          <div className="owl-result-footer">
+                            <span>{candidate.rightsStatement}</span>
+                            {candidate.sourceUrl ? <a href={candidate.sourceUrl} target="_blank" rel="noreferrer">Inspect source ↗</a> : null}
+                            <small title={candidate.sourceSha256}>Source receipt {candidate.sourceSha256.slice(0, 12)}…</small>
+                          </div>
+                        </article>
+                      );
+                    })}
+                  </div>
+                ) : null}
               </div>
             ) : null}
           </div>

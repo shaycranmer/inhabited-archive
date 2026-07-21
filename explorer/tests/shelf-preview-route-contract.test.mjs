@@ -21,5 +21,6 @@ test("shelf preview returns counts, basket distribution, and source receipts wit
   assert.match(routeSource, /GROUP BY p\.basket/);
   assert.match(routeSource, /snippet\(segment_search/);
   assert.match(routeSource, /d\.source_sha256/);
-  assert.match(routeSource, /not relevance judgments/);
+  assert.match(routeSource, /not the results of the full inquiry/);
+  assert.match(routeSource, /owl relevance judgment/);
 });

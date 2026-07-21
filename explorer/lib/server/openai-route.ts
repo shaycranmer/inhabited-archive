@@ -1,5 +1,7 @@
 export const QUERY_MAX_OUTPUT_TOKENS = 8000;
 export const ADAPT_MAX_OUTPUT_TOKENS = 16000;
+export const OWL_MAX_OUTPUT_TOKENS = 16000;
+export const TRANSLATION_MAX_OUTPUT_TOKENS = 4000;
 
 type ProtectionOptions = {
   production?: boolean;

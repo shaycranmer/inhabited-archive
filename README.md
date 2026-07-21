@@ -114,10 +114,12 @@ proposal can receive a diagnostic shelf check with
 See `schema/PERSEUS_LATIN_DEMO_ADAPTER_V1.md` and
 `schema/BADGER_ADAPTATION_CONTRACT_V1.md` for technical and plain-language
 receipts. The index and preview are real and locally verified. A reproducible
-D1 serving projection now connects individual badger proposals to the
-Explorer's diagnostic shelf check, while public D1 loading and full approved-
-plan retrieval remain open. The live Latin badger turns an approved fox table
-into strict, inspectable, still-unverified folios before those checks can run.
+D1 serving projection now connects both individual badger proposal checks and
+full approved-plan retrieval to the Explorer. The live Latin badger turns an
+approved fox table into strict, inspectable, still-unverified folios;
+application code then executes their literal forms, deduplicates overlapping
+passages, and builds an immutable candidate packet. Public D1 loading remains
+open.
 
 ## Build Week Explorer
 
@@ -128,8 +130,8 @@ small rights-safe passage packet remains a regression fixture, while the new
 the language-specialist handoff:
 
 ```text
-English question → inspectable concept map → Greek and Latin query adaptation
-→ provenance-locked candidate judgments → human-reviewed reading list
+English question → inspectable concept map → language-and-corpus adaptation
+→ real bounded retrieval → provenance-locked owl judgments → human reading
 ```
 
 Technical version: a server-side Responses API route asks GPT-5.6 for strict
@@ -139,6 +141,23 @@ joins those judgments back to immutable source metadata.
 Plain-language version: the AI librarians may recommend or reject books placed
 on their desk, but they cannot quietly invent a new book or replace its library
 card. See `docs/BUILD_WEEK_PRODUCT_BRIEF.md` and `explorer/README.md`.
+
+The implemented Latin slice is now end to end. A July 20 local run reduced 126
+literal passage matches to 121 overlap-aware units, sent 18 bounded candidates
+to the owl, and returned 18 evidence-grounded judgments. Four strong results
+received automatic working translations; a liminal result received a separate
+on-demand addendum; thirteen incidental word hits stayed inspectable without
+automatic translation. Every rerun becomes a linked immutable receipt rather than
+overwriting its predecessor. See `schema/RETRIEVAL_RUN_CONTRACT_V1.md` and
+`schema/OWL_READING_AID_CONTRACT_V1.md`.
+
+The longer product direction is a portable scholarly staff for a bounded
+digital library. A source adapter builds the shared catalogue beside the
+untouched corpus; supported language specialists adapt approved questions to
+that shelf; the owl returns a citable reading list with provisional working
+translations for triage. The current demonstration proves this architecture
+through Latin. Greek is the preferred second complete slice after the Latin
+journey's visual and deployment work is stable.
 
 ## Repository Map
 

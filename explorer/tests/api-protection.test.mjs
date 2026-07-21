@@ -3,8 +3,10 @@ import test from "node:test";
 
 import {
   ADAPT_MAX_OUTPUT_TOKENS,
+  OWL_MAX_OUTPUT_TOKENS,
   protectAiRequest,
   QUERY_MAX_OUTPUT_TOKENS,
+  TRANSLATION_MAX_OUTPUT_TOKENS,
 } from "../lib/server/openai-route.ts";
 
 function request(origin) {
@@ -52,7 +54,9 @@ test("public AI fails closed until external rate limiting is acknowledged", () =
   );
 });
 
-test("both model routes have explicit output ceilings", () => {
+test("every model route has an explicit output ceiling", () => {
   assert.equal(QUERY_MAX_OUTPUT_TOKENS, 8000);
   assert.equal(ADAPT_MAX_OUTPUT_TOKENS, 16000);
+  assert.equal(OWL_MAX_OUTPUT_TOKENS, 16000);
+  assert.equal(TRANSLATION_MAX_OUTPUT_TOKENS, 4000);
 });

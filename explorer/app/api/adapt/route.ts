@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { badgerAdaptationPlanSchema, latinDemoCorpus } from "../../../lib/adaptation-plan";
+import { badgerAdaptationPlanSchema, installedDemoCorpus } from "../../../lib/adaptation-plan";
 import {
   latinAdaptationGuidance,
   latinAdaptationPacketVersion,
@@ -58,7 +58,7 @@ export async function POST(request: Request) {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
     return NextResponse.json(
-      { error: "Live Latin adaptation needs a server-side OpenAI API key.", code: "api_key_required" },
+      { error: "Live language adaptation needs a server-side OpenAI API key.", code: "api_key_required" },
       { status: 503 },
     );
   }
@@ -76,12 +76,12 @@ export async function POST(request: Request) {
         store: false,
         background: true,
         instructions: latinAdaptationGuidance,
-        input: `Adapt this scholar-approved English concept map for the declared Latin demonstration shelf. Return exactly one folio per concept family and preserve every supplied source ID exactly.\n\nOriginal research question:\n${question}\n\nDeclared language and corpus:\n${JSON.stringify(latinDemoCorpus)}\n\nApproved map:\n${JSON.stringify(approvedBadgerMap(workspace))}`,
+        input: `Adapt this scholar-approved English concept map for the declared installed language and demonstration shelf. Return exactly one folio per concept family and preserve every supplied source ID exactly.\n\nOriginal research question:\n${question}\n\nDeclared language and corpus:\n${JSON.stringify(installedDemoCorpus)}\n\nApproved map:\n${JSON.stringify(approvedBadgerMap(workspace))}`,
         max_output_tokens: ADAPT_MAX_OUTPUT_TOKENS,
         text: {
           format: {
             type: "json_schema",
-            name: "latin_badger_adaptation_plan",
+            name: "language_badger_adaptation_plan",
             strict: true,
             schema: badgerAdaptationPlanSchema,
           },
@@ -91,7 +91,7 @@ export async function POST(request: Request) {
 
     if (!apiResponse.ok) {
       return NextResponse.json(
-        { error: `The Latin badger returned ${apiResponse.status}. The approved fox table is unchanged.` },
+        { error: `The language specialist returned ${apiResponse.status}. The approved fox table is unchanged.` },
         { status: 502 },
       );
     }
@@ -115,13 +115,13 @@ export async function POST(request: Request) {
     }
     if (result.kind === "invalid") {
       return NextResponse.json(
-        { error: "The Latin badger started work but returned no usable job receipt." },
+        { error: "The language specialist started work but returned no usable job receipt." },
         { status: 502 },
       );
     }
     if (result.kind === "terminal") {
       return NextResponse.json(
-        { error: `The Latin badger stopped with status “${result.status}”. The approved fox table is unchanged.` },
+        { error: `The language specialist stopped with status “${result.status}”. The approved fox table is unchanged.` },
         { status: 502 },
       );
     }
@@ -130,7 +130,7 @@ export async function POST(request: Request) {
     }
     if (result.kind === "empty") {
       return NextResponse.json(
-        { error: "The Latin badger returned no readable folio. The approved fox table is unchanged." },
+        { error: "The language specialist returned no readable folio. The approved fox table is unchanged." },
         { status: 502 },
       );
     }
@@ -142,12 +142,12 @@ export async function POST(request: Request) {
       responseId: result.responseId,
       packetVersion: latinAdaptationPacketVersion,
       notice:
-        "The badger proposed an inspectable Latin adaptation. Nothing in it is approved, corpus-attested, or independently dictionary-verified yet, and no corpus search has run.",
+        `The badger proposed an inspectable ${installedDemoCorpus.languageLabel} adaptation for the installed shelf. Nothing in it is approved, corpus-attested, or independently dictionary-verified yet, and no corpus search has run.`,
       plan: result.plan,
     });
   } catch {
     return NextResponse.json(
-      { error: "The Latin badger could not produce a trustworthy folio. The approved fox table is unchanged." },
+      { error: "The language specialist could not produce a trustworthy folio. The approved fox table is unchanged." },
       { status: 502 },
     );
   }

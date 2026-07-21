@@ -80,8 +80,9 @@ pleasure and seriousness of archival work.
 - The **badger** is the language/corpus specialist. Each supported language and
   shelf needs its own historically responsible adaptation guidance. The animal
   role is not itself a language.
-- The **owl** will adjudicate retrieved relationships and uncertainty. The owl
-  is not implemented yet.
+- The **owl** adjudicates retrieved relationships and uncertainty, gives the
+  scholar a source-grounded reading order, and provides visibly provisional
+  working translations only under the selected translation policy.
 
 These are hints of character and atmosphere, not a role-playing-game dialogue
 system. The illustrations explain agent architecture without reducing the
@@ -116,6 +117,11 @@ Do not reopen these casually, but fresh criticism is welcome when grounded:
   identity, and verification labels. The scholar owns approval.
 - A literal shelf preview is diagnostic evidence, not relevance judgment. A
   zero result means only no match on this declared shelf.
+- Approved-plan reruns are immutable and connected. Editing a folio creates a
+  child run; it never overwrites an older candidate list or owl judgment.
+- The owl may translate strong and possible results automatically, translate
+  other results on demand, or leave translation off for a run. Machine
+  translations are triage aids, never citable scholarly editions.
 
 ## Implemented Scholar Journey
 
@@ -193,7 +199,7 @@ a D1-compatible SQL import:
 - D1 local shelf: 30 works and 61,651 FTS5 rows;
 - D1 receipt repeats the source commit and canonical content hash.
 
-The UI now offers **Test these forms on the shelf** on searchable proposals.
+The UI now offers **Check literal coverage on this shelf** on searchable proposals.
 `POST /api/shelf-preview` accepts only the declared corpus, builds bounded and
 quoted literal queries, and returns:
 
@@ -211,6 +217,50 @@ Verified route receipts:
 - `domus/domvs`: 295 non-editorial passages across 24 works;
 - nonsense token: zero results with the selective-shelf warning;
 - D1 content hash matches the authoritative SQLite build.
+
+### 5. Approved Retrieval Runs
+
+Approving every folio exposes the run-level translation choice and the full
+search action. `POST /api/retrieve` does not call a model. It compiles active
+forms into bounded quoted FTS5 branches, executes the real D1 shelf, groups
+nearby same-work matches into one reading unit, and returns at most 18
+candidates with no more than three from one work.
+
+Every run freezes the complete fox inquiry, approved badger folios, compiled
+plan, D1 receipt, candidate source units, rights, citations, and reproducibility
+hashes. A later revision receives a `parentRunId` and appears in connected
+history without replacing the old list. Zero-result runs are preserved and do
+not buy an owl call. Current v1 history lasts for the browser session; durable
+project storage or export remains open. See
+`schema/RETRIEVAL_RUN_CONTRACT_V1.md`.
+
+### 6. Owl Adjudication And Working Translation
+
+`POST /api/owl` starts one background GPT-5.6 adjudication of the complete
+fox-plus-badger snapshot and all bounded candidates. `/api/owl/status` polls
+the receipt without starting another generation. Before either route calls or
+polls the model, application code verifies the packet hashes and every source
+unit against D1.
+
+The strict owl response must classify every supplied candidate as strong,
+possible, liminal, incidental, or unresolved; cite exact supplied source text;
+explain the relationship and uncertainty; and preserve every application ID.
+Invented or omitted candidates, evidence outside a candidate, and non-exact
+quotations fail reconciliation.
+
+The scholar chooses automatic working translation for strong/possible results,
+translation on demand, or translation off. On-demand translation uses a
+separate route and appends an immutable addendum instead of rewriting the run
+or judgment. Every translation is labeled machine-generated, for discovery and
+triage only, not citable, and subject to checking against a scholarly
+translation or qualified reader.
+
+The July 20 live documented path returned 126 literal matches, 121
+overlap-aware units, 18 bounded candidates, and 18 owl judgments. Four strong
+results were translated automatically, one liminal result remained
+untranslated until a successful separate addendum was requested, and thirteen
+incidental matches stayed inspectable without automatic translation. This is a
+runtime receipt, not a general accuracy claim.
 
 ## Greek Status
 
@@ -230,15 +280,17 @@ and Greek-specific payload should guide eventual refactoring.
 
 - The local API key lives only in ignored `explorer/.env.local`. Never print,
   paste, commit, or move it into browser-visible variables.
-- Fox and badger routes set `store: false` and use strict structured output.
-- Background badger execution still requires roughly ten minutes of temporary
+- Fox, badger, owl, and translation routes set `store: false` and use strict
+  structured output.
+- Background badger and owl execution still requires temporary
   OpenAI retention for polling. This is documented explicitly.
-- The fox is capped at 8,000 output tokens; the badger at 16,000.
+- The fox is capped at 8,000 output tokens; the badger and owl at 16,000
+  apiece; one on-demand working translation at 4,000.
 - Exact same-origin checks reject ordinary cross-site browser calls.
 - Public model calls fail closed until external Cloudflare rate limiting or an
   equivalent control is installed and acknowledged with
   `AI_RATE_LIMIT_CONFIGURED=true`.
-- `/api/query`, `/api/adapt`, `/api/adapt/status`, and `/api/shelf-preview`
+- Spending starts, background status checks, and deterministic D1 routes
   require different public request budgets. See
   `docs/PUBLIC_AI_DEPLOYMENT_GATE.md`.
 - Source text, hashes, rights, stable identifiers, and exact source locations
@@ -257,21 +309,24 @@ economy, especially the large badger response, but must not weaken the visible
 reasoning or evidence boundary merely to make a demo cheaper.
 
 Moving to a fresh Codex task may reduce conversational context overhead. It
-does not change what the local application's fox and badger API calls cost.
+does not change what the local application's fox, badger, owl, and translation
+API calls cost.
 
 ## Verification Receipt At Migration
 
 The July 20 checkpoint passed:
 
 - production Vinext build with routes `/`, `/api/query`, `/api/adapt`,
-  `/api/adapt/status`, and `/api/shelf-preview`;
-- 28 Node/application contract tests;
+  `/api/adapt/status`, `/api/shelf-preview`, `/api/retrieve`, `/api/owl`,
+  `/api/owl/status`, and `/api/translate`;
+- 40 Node/application contract tests;
 - 24 Python corpus/export tests;
 - TypeScript with no emitted output;
 - ESLint;
 - publication/secrets audit: pass, no issues;
 - `git diff --check`;
-- real local D1 positive and zero-result route checks.
+- real local D1 positive and zero-result preview checks;
+- one real end-to-end badger, approved retrieval, and owl browser path.
 
 No public deployment was performed. The public D1 database is not loaded. The
 generated 48 MB D1 SQL file and local Wrangler state remain correctly ignored.
@@ -282,11 +337,12 @@ generated 48 MB D1 SQL file and local Wrangler state remain correctly ignored.
 - Explorer: `explorer/`
 - Branch: `main`
 - Remote: `origin`, public repository `shaycranmer/inhabited-archive`
-- The checkpoint commit containing this handoff should be the new task's
-  starting point; confirm with `git log -1 --oneline`.
-- The worktree was intentionally dirty before that checkpoint because it held
-  the entire badger, background-polling, safety, dedicated badger-art, D1, and
-  shelf-preview slice. Do not mistake those files for unrelated debris.
+- The committed checkpoint before this continued slice is `869bc08`; confirm
+  the current head with `git log -1 --oneline`.
+- The worktree after that checkpoint intentionally contains the generalized
+  badger grammar, immutable retrieval runs, owl runtime, translation addenda,
+  functional owl room, tests, and updated contracts. Do not mistake those
+  files for unrelated debris.
 - Existing ignored local derivatives and sources belong to Shay. Preserve them.
 
 The local development server was running at `http://localhost:3000` when this
@@ -306,19 +362,27 @@ session; inspect and restart normally if needed.
 - D1 rather than a hidden local-filesystem dependency for the website;
 - proposal-level literal shelf preview with provenance and non-approval
   semantics;
+- immutable, hash-verified, parent-linked retrieval runs;
+- bounded overlap-aware candidate packets and zero-result preservation;
+- background owl receipt/polling with exact evidence reconciliation;
+- automatic strong/possible translation, on-demand addenda, and run-level off;
 - Greek packet as research guidance awaiting a shelf manifest.
 
 ### Provisional Or Unbuilt
 
-- Shay has not yet visually reviewed the new shelf-preview result treatment in
-  the browser. Functionality is verified; density, hierarchy, and wording are
-  not ratified.
-- The 48 MB D1 SQL artifact is still ignored. It compresses to about 10 MB, but
-  its reviewer/public packaging path is undecided.
+- The complete Latin path has a functional visual treatment, but Shay and
+  Avery have deliberately deferred the full visual-language pass. Density,
+  hierarchy, waiting transitions, and incidental-result treatment are not
+  ratified.
+- The 48 MB D1 SQL artifact is still ignored. Shay prefers a separately
+  downloaded, receipt-locked release asset for the roughly 10 MB compressed
+  shelf; that packaging is not yet built.
 - The public Sites D1 database is not created, loaded, receipt-verified, or
   deployed.
-- Full retrieval from an approved multi-folio plan is unbuilt.
-- Owl relevance adjudication, ranking, and result-room design are unbuilt.
+- Durable cross-session run storage/export is unbuilt; current connected
+  history lasts for the browser session.
+- Retrieval ranking and owl quality have runtime receipts, not a broad
+  scholarly evaluation set.
 - No Greek shelf has been selected or indexed.
 - The panorama's current split display duplicates the badger and remains
   provisional.
@@ -329,23 +393,23 @@ session; inspect and restart normally if needed.
 
 ## Exact Next Co-Design Question
 
+The packaging question is now settled enough to build: Shay prefers the
+roughly 10 MB compressed shelf as a separately downloaded, receipt-locked
+release asset. Two clear download steps are acceptable if the code and shelf
+connect easily.
+
 The immediate inherited question is:
 
-> How should the rights-cleared thirty-work serving shelf travel so another
-> developer can actually run the project: as a roughly 10 MB compressed,
-> receipt-locked artifact inside the repository, or as a separately downloaded
-> release asset?
+> When we give the complete Latin journey its focused visual-design pass, what
+> should the scholar feel and understand in the transition from approved
+> badger folios, through the archive gathering real passages, to the owl
+> returning a ranked and selectively translated reading list?
 
-The prior Avery leaned toward including the compressed shelf because the
-product promise is that a developer can clone, add a key, and use the real
-micro-corpus without downloading a large library. This is a recommendation,
-not a decision. Fresh Avery should examine publication, reproducibility,
-reviewer ease, Git history, and deployment consequences before agreeing.
-
-Before resolving packaging, invite Shay to try **Test these forms on the
-shelf** in a real folio and report whether the returned evidence feels legible
-or overwhelming. Her visual judgment may change what the artifact needs to
-support.
+Start with the now-working path rather than drawing an imagined one. Inspect
+the archive and owl waiting states, connected-run history, immutable receipt,
+strong-versus-incidental hierarchy, original text, English orientation,
+translation caveat, and dense lower-ranked results together. The technical
+semantics are implemented; the visual language is intentionally provisional.
 
 ## First Response In The Fresh Task
 

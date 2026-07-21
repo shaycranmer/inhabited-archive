@@ -1,6 +1,6 @@
 # Number Rants Project State
 
-Last updated: 2026-07-19
+Last updated: 2026-07-20
 
 Purpose: cold-start handoff for an Avery or human collaborator entering the
 project after compaction, interruption, or machine migration.
@@ -59,7 +59,7 @@ Historical logs may retain absolute paths as provenance. Use
   third-party corpora, editions, translations, and records outside those
   grants.
 
-## Build Week Co-Design State - July 18
+## Build Week Co-Design State - July 20
 
 The approved emotional north star is that the world opens: a scholar begins
 with a question in a language she knows, and an inhabited archive helps her
@@ -106,9 +106,9 @@ pinnable, removable strings attached directly to source cards; and scope,
 exclusions, set-aside memory, and coverage occupy quieter right-hand trays.
 Scope and exclusion slips can be edited, pinned, added, set aside, or
 explicitly converted between the two meanings. Cards can be reordered by drag or accessible move controls,
-but order has no retrieval effect. Query approval currently records approval
-and hands the unchanged table to the live Latin specialist; the resulting
-folios still stop before retrieval.
+but order has no retrieval effect. Query approval hands the unchanged table to
+the live installed-language specialist. Approved folios now proceed through
+real bounded retrieval and owl adjudication.
 
 One concept family or one child concept may be named the `Focus of Inquiry`.
 This is intellectual priority, not a synonym for pinning and not a consequence
@@ -195,12 +195,12 @@ passages, the 97,337,344-byte database, SQLite integrity `ok`, and canonical
 hash `a9a8c77a89a1ca89beb8ac199239b66066ac8c99e60ceb0660d6240ccbd87405`.
 
 This completes the corpus-builder, literal-search floor, badger data contract,
-live Latin adaptation route, and local term-preview machinery. The route uses
+live Latin adaptation route, local term-preview machinery, approved-plan
+retrieval, and owl handoff. The badger route uses
 strict structured output, receives only an explicitly approved fox table,
 requires exactly one folio per source family, refuses invented source-card
 identifiers, and fixes corpus identity plus verification status in application
-code. It does not yet connect the database to the deployed Explorer, execute
-an approved plan, or implement owl adjudication.
+code. Public D1 loading and deployment remain separate work.
 
 The first badger folio room is now connected to fox-table approval. While the
 live route works, an honest rotating desk notice says that the handoff may take
@@ -252,10 +252,11 @@ corpus verification had occurred. Full two-family plans took roughly two
 minutes in the local test and produced about 13–18 proposals, confirming that
 the collapsed-folio design and honest waiting state are functional needs.
 
-Public AI spending now fails closed by default. Both model routes require an
-exact same-origin request; the fox is capped at 8,000 output tokens and the
-badger at 16,000; duplicated response parsing and question cleaning now live
-in one server-only helper. Production calls remain disabled until an external
+Public AI spending now fails closed by default. Every model route requires an
+exact same-origin request; the fox is capped at 8,000 output tokens, the badger
+and owl at 16,000 apiece, and one on-demand translation at 4,000. Shared
+response parsing and question cleaning live in one server-only helper.
+Production calls remain disabled until an external
 Cloudflare rate limit or equivalent protection is installed, verified, and
 acknowledged with `AI_RATE_LIMIT_CONFIGURED=true`. This environment flag is a
 deployment interlock rather than a rate limiter. See
@@ -282,17 +283,89 @@ possible, and source/hash/rights receipts. A `domus` route trial reproduced 295
 non-editorial passages across 24 works; a nonsense token returned zero with the
 historical-absence warning.
 
-The folio UI now offers **Test these forms on the shelf** for searchable
-proposals. A preview attaches without changing proposal activity, pins, edits,
-folio status, or plan approval. Editing search forms clears a stale preview.
-The interface names this as a literal shelf check rather than owl judgment.
+The July 20 co-design pass generalized the badger room's public grammar and its
+proposal contract. Generic room, loading, approval, and error language no
+longer presents the product as a Latin-only table; the structured proposal
+field is now `sourceLanguageExpression` rather than `latinExpression`. The
+installed demonstration corpus and its receipts remain explicitly Latin, as
+they must. The shelf action is now **Check literal coverage on this shelf** and
+states that counts apply to the proposed forms alone, not the complete inquiry.
+Raw source-language examples remain collapsed behind a note that they are most
+useful to a reader of that language. A preview still attaches without changing
+proposal activity, pins, edits, folio status, or plan approval, and editing
+search forms clears a stale preview.
+
+The owl reading-aid runtime is now implemented. Shortlisted results keep the
+original passage primary while separating an exact evidence span, visibly
+provisional machine-generated working translation, brief English orientation,
+and reasoned relevance judgment. See
+`schema/OWL_READING_AID_CONTRACT_V1.md`. This supports rapid triage without
+presenting model translation as a citable edition or final interpretation.
+
+The complete Latin scholar journey is now locally implemented. Every approved
+folio plan compiles into bounded literal FTS5 branches; nearby same-work hits
+are combined into reading units; deterministic ranking rewards direct forms,
+cross-family convergence, approved relationships, and Focus of Inquiry; and
+exclusion matches remain visible demotion signals. The application keeps at
+most 18 candidates, no more than three per work, and no more than seven source
+segments per candidate.
+
+Each retrieval is an immutable run with a unique ID, optional parent-run link,
+complete fox and badger snapshots, corpus receipt, source metadata, and hashes
+over both component records and the complete owl-bound packet. Editing and
+reapproving a folio creates a connected child run rather than overwriting the
+old candidate list or judgment. Zero-result runs are preserved without buying
+an owl call. V1 history lasts for the browser session; durable cross-session
+storage/export remains open. See `schema/RETRIEVAL_RUN_CONTRACT_V1.md`.
+
+One background owl response receives the entire fox map, approved badger
+folios, compiled plan, and provenance-locked candidate units. Application code
+re-verifies every hash and source segment against D1 before each paid owl or
+translation call. Strict reconciliation rejects invented or omitted candidate
+IDs, evidence outside the candidate, and non-exact quotations. Scholars may
+select automatic working translation for strong/possible results, translation
+on demand, or translation off. On-demand work becomes an immutable addendum.
+
+The July 20 live documented path returned 126 raw literal matches, 121
+overlap-aware units, 18 bounded candidates, and 18 owl judgments. Four strong
+results received automatic working translations; one liminal result remained
+untranslated until a successful on-demand addendum was requested; thirteen
+incidental word matches remained inspectable without automatic translation.
+This verifies the runtime seam, not general
+Latin recall or owl accuracy. Production build, TypeScript, ESLint, and 40
+Explorer tests pass.
+
+The first focused badger-to-owl visual pass is now implemented and locally
+verified. A new partial badger margin layer lets the full corpus walker recede
+into a muzzle, forepaw, magnifying lens, and indexed folios during long review.
+Badger folios and proposals accumulate restrained pigment according to their
+declared confidence without making weaker material illegible. The owl now has
+a dedicated right-edge lectern room with one balanced feather, the fullest
+archive palette, honest stage-specific waiting copy, and a pale central field
+for real receipts and results. Ranked results read as annotated leaves:
+strong evidence receives the richest lapis/teal/gold illumination; possible,
+liminal, unresolved, and incidental evidence progressively loses ornament but
+not text contrast; working translation is a visibly separate tipped-in aid.
+Exact prompts, the rejected badger-drift draft, targeted owl correction,
+dimensions, and hashes are preserved in `docs/LIBRARIAN_ART_PROVENANCE.md`.
+
+A fresh credentialed browser run used the saved fox example, generated and
+approved three live badger folios, retrieved 140 raw literal matches into 131
+deduplicated units and 18 candidates, and returned 18 owl reading leaves.
+Rendered QA passed at 1440 x 1000 and 390 x 844 with no browser console errors.
+The owl entrance, waiting room, strong translated leaf, incidental leaf, and
+badger folio bridge were all inspected with real run data. This ratifies the
+new badger/owl visual grammar, not the promised final whole-product polish
+pass.
 
 ## Next Recommended Build Week Move
 
-Decide how the 48 MB D1 serving artifact reaches independent reviewers and the
-public Sites database without turning it into an unexplained repository blob.
-Then exercise multiple live badger proposals through the UI and freeze the
-diagnostic preview interaction before building full approved-plan retrieval.
+Package the roughly 10 MB compressed D1 shelf as a separately downloaded,
+receipt-locked release asset and connect the public Sites database without
+turning the repository into an unexplained data blob. Keep the promised final
+whole-product visual ratification pass separate: fox, badger, owl, responsive
+spacing, and all transitions should be judged together after the public shelf
+connection is stable.
 
 ## Separate Research Infrastructure Move
 

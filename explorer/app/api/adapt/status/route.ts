@@ -55,7 +55,7 @@ export async function POST(request: Request) {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
     return NextResponse.json(
-      { error: "Live Latin adaptation needs a server-side OpenAI API key.", code: "api_key_required" },
+      { error: "Live language adaptation needs a server-side OpenAI API key.", code: "api_key_required" },
       { status: 503 },
     );
   }
@@ -71,7 +71,7 @@ export async function POST(request: Request) {
     );
     if (!apiResponse.ok) {
       return NextResponse.json(
-        { error: `The Latin badger status check returned ${apiResponse.status}. The approved fox table is unchanged.` },
+        { error: `The language specialist status check returned ${apiResponse.status}. The approved fox table is unchanged.` },
         { status: 502 },
       );
     }
@@ -98,7 +98,7 @@ export async function POST(request: Request) {
     }
     if (result.kind === "terminal") {
       return NextResponse.json(
-        { error: `The Latin badger stopped with status “${result.status}”. The approved fox table is unchanged.` },
+        { error: `The language specialist stopped with status “${result.status}”. The approved fox table is unchanged.` },
         { status: 502 },
       );
     }
@@ -107,7 +107,7 @@ export async function POST(request: Request) {
     }
     if (result.kind === "empty") {
       return NextResponse.json(
-        { error: "The Latin badger returned no readable folio. The approved fox table is unchanged." },
+        { error: "The language specialist returned no readable folio. The approved fox table is unchanged." },
         { status: 502 },
       );
     }
@@ -119,12 +119,12 @@ export async function POST(request: Request) {
       responseId: result.responseId,
       packetVersion: latinAdaptationPacketVersion,
       notice:
-        "The badger proposed an inspectable Latin adaptation. Nothing in it is approved, corpus-attested, or independently dictionary-verified yet, and no corpus search has run.",
+        "The badger proposed an inspectable adaptation for the installed language and shelf. Nothing in it is approved, corpus-attested, or independently dictionary-verified yet, and no corpus search has run.",
       plan: result.plan,
     });
   } catch {
     return NextResponse.json(
-      { error: "The Latin badger could not finish a trustworthy folio. The approved fox table is unchanged." },
+      { error: "The language specialist could not finish a trustworthy folio. The approved fox table is unchanged." },
       { status: 502 },
     );
   }

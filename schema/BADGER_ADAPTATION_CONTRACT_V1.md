@@ -14,7 +14,7 @@ search to fail.
 
 **Shay translation:** each fox concept family becomes one contained research
 folder. The folder stays manageable when closed, but a scholar can open it and
-inspect or change every Latin proposal inside.
+inspect or change every source-language proposal inside.
 
 The topic-general TypeScript contract lives in
 `explorer/lib/adaptation-plan.ts`. Rowan's method guidance lives in
@@ -38,7 +38,7 @@ Opening the folio reveals individually controllable proposals. A proposal
 records:
 
 - the exact fox concept that licensed it;
-- Latin expression and ordinary-English sense;
+- source-language expression and ordinary-English sense;
 - rationale and retrieval effect;
 - surface forms, spelling variants, phrases, and any syntactic frame;
 - period and genre tags;
@@ -47,7 +47,8 @@ records:
 - scholar state: active, pinned, or edited;
 - an optional on-demand shelf preview.
 
-The six adaptation categories come directly from the Latin packet:
+The six adaptation categories are language-neutral; the installed Latin packet
+provides their first language-specific implementation:
 
 1. lexical translation;
 2. morphological expansion;
@@ -72,7 +73,8 @@ The contract distinguishes:
 
 The interface must not claim dictionary verification merely because a model
 knows dictionary-like information. Inspectability locates trust; it does not
-turn a non-Latinist into a Latinist or remove the need for expert review.
+turn a scholar into a reader of an unfamiliar source language or remove the
+need for expert review.
 
 The live route accepts only an explicitly approved fox table. Application
 code then reconnects every returned folio and proposal to the exact approved
@@ -82,18 +84,20 @@ identity and verification status: model output cannot promote itself to
 `corpus_attested` or `externally_verified`.
 
 **Shay translation:** the badger cannot quietly add a new card behind your
-back or declare its own Latin homework checked. It can propose; the system
+back or declare its own language homework checked. It can propose; the system
 keeps the label honest; you still decide what proceeds.
 
-## On-Demand Shelf Preview
+## On-Demand Literal Coverage Check
 
-Every searchable proposal may offer **Test this term on the shelf**. The
+Every searchable proposal may offer **Check literal coverage on this shelf**.
+The control checks the proposal's forms alone; it does not report how many
+passages satisfy the scholar's complete concept map. The
 deterministic preview reports:
 
 - total matching passages;
 - total works containing a match;
 - match distribution across corpus baskets;
-- up to ten raw, highlighted examples, taking the first matching authorial
+- up to five raw, highlighted examples, taking the first matching authorial
   passage from different works in declared shelf order where possible;
 - complete citation, source, hash, and rights receipts.
 
@@ -109,10 +113,18 @@ Run the local implementation with:
 python3 tools/search_demo_latin_corpus.py domus --preview --sample-limit 3
 ```
 
-The preview is deliberately not owl adjudication. It does not rank relevance,
-claim that a passage answers the scholar's question, approve the proposal, or
-alter any pin/edit/active state. Zero hits means only **no matches on this
-shelf**. It never establishes historical absence.
+The preview is deliberately not owl adjudication. It does not combine the
+proposal with the other approved concepts, relationships, scope choices, or
+exclusions; rank relevance; claim that a passage answers the scholar's
+question; approve the proposal; or alter any pin/edit/active state. Zero hits
+means only **no matches on this shelf**. It never establishes historical
+absence.
+
+Raw examples remain collapsed under **Inspect sample occurrences — most useful
+if you read [language]**. Their purpose is to let a reader of that language
+spot an unexpected sense, malformed form, or noisy branch. Counts may still
+help other scholars recognize breadth or absence, but untranslated occurrences
+must not imply that the scholar can yet assess their meaning.
 
 The verified `domus` shelf check found 295 passages across 24 of the 30 works.
 A nonsense-token check found zero and returned the declared absence warning.
@@ -149,7 +161,7 @@ boundary. The following remain unbuilt:
 - a loaded and receipt-verified public D1 shelf;
 - a final packaging path for reviewers who run the project independently;
 - final approved-plan execution;
-- owl adjudication.
+- owl adjudication and its clearly labeled working-translation reading aid.
 
 The Cloudflare-oriented Explorer now queries a D1 binding rather than opening
 the ignored SQLite file. The checked-in migration creates the serving shape;

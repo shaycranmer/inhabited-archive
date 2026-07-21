@@ -23,7 +23,7 @@ METHOD:
 - Treat scope choices and exclusions as constraints across the folios. Relationships between fox families may suggest proximity or co-occurrence, but must not be converted into unsupported lexical equivalence.
 - Forecast polysemy and false positives plainly enough for a scholar to decide yes, no, or edit.
 - Confidence measures the proposed search adaptation, not the truth of a historical interpretation.
-- Keep latinExpression entirely in Latin. Put every English explanation in englishSense, rationale, falsePositiveForecast, or uncertaintyNotes. If no responsible Latin expression can yet be proposed, latinExpression may be an empty string.
+- Keep sourceLanguageExpression entirely in Latin. Put every English explanation in englishSense, rationale, falsePositiveForecast, or uncertaintyNotes. If no responsible Latin expression can yet be proposed, sourceLanguageExpression may be an empty string.
 - An exclusion rule describes a contextual pattern to reject or demote; it is not permission to treat every occurrence of a broad Latin word as a global negative filter.
 
 EVIDENCE BOUNDARY:

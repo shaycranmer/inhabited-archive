@@ -60,7 +60,7 @@ export async function POST(request: Request) {
   const previewRequest = parseShelfPreviewRequest(body);
   if (!previewRequest) {
     return NextResponse.json(
-      { error: "Choose one inspectable Latin proposal with literal forms to test." },
+      { error: "Choose one inspectable source-language proposal with literal forms to check." },
       { status: 400 },
     );
   }
@@ -89,7 +89,7 @@ export async function POST(request: Request) {
     ) {
       return NextResponse.json(
         {
-          error: "The Latin shelf exists, but its provenance receipt is incomplete. No preview was run.",
+          error: "The installed shelf exists, but its provenance receipt is incomplete. No coverage check was run.",
           code: "shelf_receipt_required",
         },
         { status: 503 },
@@ -173,7 +173,7 @@ export async function POST(request: Request) {
         rightsStatement: row.rights_statement || "Rights statement unavailable",
       })),
       notice:
-        "These are raw diagnostic examples from distinct works where possible, not relevance judgments. No matches on this shelf would not prove historical absence.",
+        "These are raw occurrences of the proposed forms from distinct works where possible. They are not the results of the full inquiry and have not received an owl relevance judgment. No matches on this shelf would not prove historical absence.",
       orthographicMatching:
         "Literal query-time expansion is insensitive to u/v and i/j and to case. It does not yet fold ae/e or oe/e, strip diacritics, split enclitics, or lemmatize.",
       shelfReceipt: {
@@ -185,7 +185,7 @@ export async function POST(request: Request) {
   } catch {
     return NextResponse.json(
       {
-        error: "The Latin shelf is not available to this copy of the archive yet. The proposal is unchanged.",
+        error: "The installed shelf is not available to this copy of the archive yet. The proposal is unchanged.",
         code: "shelf_unavailable",
       },
       { status: 503 },

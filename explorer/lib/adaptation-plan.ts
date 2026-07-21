@@ -23,7 +23,7 @@ export type ModelAdaptationProposal = {
   sourceConceptLabel: string;
   category: AdaptationCategory;
   retrievalEffect: RetrievalEffect;
-  latinExpression: string;
+  sourceLanguageExpression: string;
   englishSense: string;
   rationale: string;
   searchForms: string[];
@@ -138,7 +138,7 @@ export type FolioSummary = {
   status: FolioStatus;
 };
 
-export const latinDemoCorpus = {
+export const installedDemoCorpus = {
   languageCode: "lat",
   languageLabel: "Latin",
   corpusId: "perseus-latin-demo-v1",
@@ -148,7 +148,7 @@ export const latinDemoCorpus = {
 } as const;
 
 export const modelProposalVerificationNote =
-  "Proposed by the model under the Latin adaptation packet; not yet corpus-attested or independently dictionary-verified.";
+  "Proposed by the model under the installed language-adaptation packet; not yet corpus-attested or independently dictionary-verified.";
 
 function uniqueStrings(values: string[]) {
   const seen = new Set<string>();
@@ -164,7 +164,7 @@ function proposalIdentity(proposal: ModelAdaptationProposal) {
   return [
     proposal.sourceConceptId,
     proposal.category,
-    proposal.latinExpression,
+    proposal.sourceLanguageExpression,
     proposal.englishSense,
   ]
     .join("\u0000")
@@ -188,7 +188,7 @@ export function hydrateBadgerAdaptationPlan(
       seenProposals.add(identity);
       return [{
         ...proposal,
-        id: `${folioId}-proposal-${slug(proposal.latinExpression || proposal.englishSense)}-${proposalIndex + 1}`,
+        id: `${folioId}-proposal-${slug(proposal.sourceLanguageExpression || proposal.englishSense)}-${proposalIndex + 1}`,
         searchForms: uniqueStrings(proposal.searchForms),
         orthographicVariants: uniqueStrings(proposal.orthographicVariants),
         phrases: uniqueStrings(proposal.phrases),
@@ -293,7 +293,7 @@ export function reconcileBadgerAdaptationPlan(
 
   return hydrateBadgerAdaptationPlan({
     ...model,
-    ...latinDemoCorpus,
+    ...installedDemoCorpus,
     globalUncertainties: [
       ...model.globalUncertainties,
       "The demonstration shelf is selective; a zero-result preview cannot establish historical absence.",
@@ -399,7 +399,7 @@ export const badgerAdaptationPlanSchema = {
                 "sourceConceptLabel",
                 "category",
                 "retrievalEffect",
-                "latinExpression",
+                "sourceLanguageExpression",
                 "englishSense",
                 "rationale",
                 "searchForms",
@@ -422,7 +422,7 @@ export const badgerAdaptationPlanSchema = {
                   type: "string",
                   enum: ["include", "demote", "exclude", "disclose_only"],
                 },
-                latinExpression: { type: "string" },
+                sourceLanguageExpression: { type: "string" },
                 englishSense: { type: "string" },
                 rationale: { type: "string" },
                 searchForms: stringArray,

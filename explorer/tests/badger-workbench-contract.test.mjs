@@ -7,7 +7,7 @@ const source = await readFile(
   "utf8",
 );
 
-test("approved fox map enters the live Latin handoff without claiming retrieval", () => {
+test("approved fox map enters the installed language handoff without claiming retrieval", () => {
   assert.match(source, /fetch\(responseId \? "\/api\/adapt\/status" : "\/api\/adapt"/);
   assert.match(source, /"\/api\/adapt\/status" : "\/api\/adapt"/);
   assert.match(source, /approved: true/);
@@ -36,8 +36,10 @@ test("badger waiting language is honest about timing and table stability", () =>
 
 test("a proposal can run an inspectable diagnostic shelf check without changing approval", () => {
   assert.match(source, /fetch\("\/api\/shelf-preview"/);
-  assert.match(source, /Test these forms on the shelf/);
+  assert.match(source, /Check literal coverage on this shelf/);
   assert.match(source, /attachShelfPreview/);
-  assert.match(source, /not an owl judgment/i);
+  assert.match(source, /not your inquiry results/i);
+  assert.match(source, /most useful if you read/);
+  assert.match(source, /approved concepts, relationships, scope, and exclusions/);
   assert.match(source, /preview\.notice/);
 });

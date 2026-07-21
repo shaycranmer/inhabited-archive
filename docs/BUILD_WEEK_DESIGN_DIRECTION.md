@@ -108,8 +108,12 @@ civilizations. Their identities emerge from modes of scholarly attention:
   connections; associated with the head-librarian conversation.
 - **Badger — corpus walker:** digs into manuscripts, word forms, variants, and
   context; associated with retrieval and close inspection.
-- **Owl — adjudicator:** examines candidates, provenance, and whether a number
-  receives qualitative meaning or merely counts six donkeys.
+- **Owl — adjudicator and reading guide:** examines candidates, provenance,
+  and whether a number receives qualitative meaning or merely counts six
+  donkeys. For shortlisted source-language passages, the owl also supplies a
+  clearly labeled provisional working translation and brief English
+  orientation so the scholar can decide what deserves human reading time.
+  Translation and relevance remain separate, inspectable claims.
 
 Language-specific librarians may still exist within the architecture. Avoid
 making an animal, costume, or monument stand in for Greek, Latin, Arabic,
@@ -227,8 +231,9 @@ never inferred from card position, and the fox need not connect every card.
 The scholar may edit, pin, add, or remove a relationship string. The table ends
 with a clear scholar approval action and an equally visible route to keep
 working with the fox.
-Approval now enters the live Latin folio desk and stops honestly after
-inspectable language adaptation; it does not pretend that retrieval has run.
+Approval now enters the installed language-specialist folio desk and stops
+honestly after inspectable language adaptation; it does not pretend that
+retrieval has run. The current installed demonstration language is Latin.
 
 The system should not require the scholar to approve every reasonable card
 individually. The scholar edits what matters, then approves the map as a whole.
@@ -439,9 +444,17 @@ pinned Perseus `canonical-latinLit` snapshot. It is balanced across five
 declared genre/domain baskets and was selected before the eventual video
 question. See `docs/DEMO_LATIN_CORPUS.md` and
 `sources/indexes/demo_latin_30.csv`. The local manifest-driven SQLite corpus
-index and diagnostic lexical search are now built and verified. They are not
-yet connected to the Explorer; the visual language-specialist handoff is now
-implemented separately from that retrieval bridge.
+index, D1 serving projection, diagnostic lexical checks, approved-plan
+retrieval, and owl handoff are now built and locally verified.
+
+The owl room's current composition is deliberately functional rather than
+visually ratified. It makes the connected run history, immutable receipt,
+source-grounded reading order, exact original text, English orientation,
+machine-translation caveat, confidence, and reasons visible. Strong and
+possible results receive automatic translation only when the scholar selects
+that policy; weaker translations are available on demand; translation can be
+disabled for the run. A later folio revision creates a visibly connected child
+run rather than replacing the old list.
 
 ## Still Open
 
@@ -452,12 +465,12 @@ phone layouts. The table composition has passed a first browser inspection at
 the compact in-app width but remains a co-design prototype awaiting Shay's
 review rather than an approved finished layout.
 
-The next build boundary is the deployable corpus-preview seam and the approval
-semantics that govern entry into retrieval. Still-open decisions include the
-fox's full one-to-three-question clarification rhythm, corpus-coverage bridge
-behavior, final query approval,
-retrieval integration, owl adjudication details, character micro-behaviors,
-animation restraint, further responsive crop refinement, and the video path.
+The next co-design boundary is a complete visual-language pass across the real
+Latin journey, especially the transition from approved folios through archive
+retrieval into owl waiting and ranked results. Still-open decisions include the
+owl's final visual grammar, fox clarification rhythm, corpus-coverage bridge
+behavior, character micro-behaviors, animation restraint, responsive crop
+refinement, durable run export/storage, and the video path.
 
 Language and corpus adaptations must be inspectable before retrieval. Each fox
 concept family becomes one collapsed badger folio rather than an explosion of
@@ -467,11 +480,14 @@ exclusion, and uncertainty proposals. The collapsed state summarizes direct
 and exploratory counts, scope, highest risk, confidence, edit/approval state,
 and how many proposals have been previewed.
 
-Every searchable proposal may offer an on-demand **Test this term on the
-shelf** control. It reports actual match and work counts plus a few raw,
-citable contexts from different works where possible. It is a catalogue check,
-not owl adjudication: it does not rank relevance, approve or mutate the plan,
-or turn zero shelf hits into a claim of historical absence. Verification
+Every searchable proposal may offer an on-demand **Check literal coverage on
+this shelf** control. It reports actual match and work counts for that
+proposal's forms alone; it does not predict the result count for the whole
+inquiry. Raw citable contexts from different works remain collapsed behind an
+explicit note that they are most useful to a reader of the source language. It
+is a catalogue check, not owl adjudication: it does not combine the approved
+concept map, rank relevance, approve or mutate the plan, or turn zero shelf
+hits into a claim of historical absence. Verification
 language must distinguish packet-guided model proposal, corpus attestation,
 and genuine external lexical verification. The underlying v1 contract and
 local deterministic preview are implemented. The live Latin route now also
@@ -480,12 +496,13 @@ application-owned verification labels. Three unrelated live plans initially
 took about two minutes apiece and returned roughly 13–18 proposals across two
 families; a later full folio handoff took closer to five minutes, so the badger
 room needs an honest waiting state and must make collapsed folios
-the default. That first composition is now implemented: a quiet Latin desk,
+the default. That first composition is now implemented: a quiet language desk,
 an honest rotating wait notice, compact folio covers, in-place expansion,
 recoverable proposal set-aside, proposal editing and pins, and per-folio
 approval. Approved folios recollapse and clearly offer reopening for
 inspection. Dedicated badger art now enters from the upper-left behind the
 room, and the fox worktable art fades into uninterrupted parchment rather than
-ending at a hard illustrated boundary. It is a co-design implementation
-awaiting browser review rather than a frozen finished room. The deployed
-runtime bridge remains open.
+ending at a hard illustrated boundary. The local runtime bridge now completes
+the Latin path, but the room remains a co-design implementation awaiting a
+focused visual review rather than a frozen finished composition. Public D1,
+rate-limit verification, and deployment remain open.

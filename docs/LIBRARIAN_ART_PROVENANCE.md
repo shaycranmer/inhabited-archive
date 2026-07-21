@@ -347,6 +347,226 @@ without acquiring a false illustrated boundary.
 > photorealism, cute mascot proportions, oversized head, giant eyes, human
 > smile, or performance toward the viewer.
 
+## Badger Folio Margin
+
+- Project asset: `explorer/public/art/badger-folio-margin-v1.png`
+- Generation tool: built-in `image_gen.imagegen`
+- Generation type: new image using the approved badger room and fox worktable
+  as character, medium, palette, and edge-inhabitation references
+- Generation date: 2026-07-20
+- Number of generations: one
+- Edit passes: none
+- Dimensions: 1772 x 887 pixels
+- Aspect ratio: approximately 2:1
+- SHA-256:
+  `f755f7e925e89b8ebaf5254ce119a9aaa7f7b98596537b9e822a0e65f4c8f96f`
+- Status: integrated as the quieter identity-bearing bridge between the badger
+  entrance portrait and the long live folio stack
+
+This layer does not replace the approved badger room. It lets the full
+character recede while a partial muzzle, forepaw, lens, indexed folios, and
+colored working marks continue to identify the corpus-walking phase.
+
+### Exact Badger Folio Margin Prompt
+
+> **Use case:** stylized-concept
+>
+> **Asset type:** restrained wide margin backing layer for the long badger
+> folio-review section of an adult scholarly digital-humanities website
+>
+> **Input images:** Image 1 is the approved badger folio room and exact adult
+> badger, engraved-hand, manuscript, and palette reference. Image 2 establishes
+> the top-down edge-inhabitation and calm interface-safe working-surface
+> vocabulary. This new layer continues the same room farther down the desk
+> after the full badger entrance portrait has receded.
+>
+> **Primary request:** Create a subtle “the badger has been here” phase anchor
+> for the scholar’s long folio stack. Show only a partial naturalistic adult
+> badger presence entering from the upper-right/right page edge: the edge of the
+> black-and-white muzzle with a few engraved whiskers, plus one compact
+> species-correct forepaw lightly pinning the corner of an overlapping folio
+> beside a small magnifying lens. The badger is absorbed in the page and never
+> looks toward the viewer. Do not show the full head or body. The scholarly
+> action, not a pawprint mascot symbol, should identify the phase.
+>
+> **Scene/backdrop:** warm sandy parchment or parchment-covered desk. At the
+> right and outer edges, include two or three overlapping blank folio leaves, a
+> stitched binding edge, a few indexing tabs, variant-mark pins, a thin rust
+> rule, and delicate foliate or diagrammatic marginalia. Let these artifacts
+> dissolve rapidly into quiet parchment toward the center and left.
+>
+> **Composition/framing:** panoramic horizontal website backing layer,
+> approximately 2:1. Keep at least 72 percent of the center and left completely
+> calm, pale, and low contrast for real expandable HTML folios. Confine the
+> partial badger muzzle, paw, lens, folio edges, and densest marginalia to the
+> upper-right/rightmost 22 to 28 percent, with a little linework descending the
+> right margin. No central object and no illustrated frame.
+>
+> **Style/medium:** refined pen-and-ink engraving mixed with medieval marginalia
+> and early printed-book illustration; finely crosshatched; adult, scholarly,
+> historically strange, intelligent, tactile, slightly whimsical; at least 80
+> percent monochrome black-brown linework. Same stocky adult badger identity and
+> same artistic hand as Image 1. Competent manuscript creature, never mascot
+> art.
+>
+> **Color palette:** warm sandy parchment, black-brown ink, brandy rust #7F2F07,
+> muted harvest gold #C98928, faded copper-sage #928464, with more visible but
+> still restrained deep teal #00678A and lapis navy #041552 than in the fox
+> phase. Color belongs specifically to intellectual work: teal and lapis
+> indexing tabs and variant marks, muted gold pins, rust rules and stitching.
+> Do not recolor the badger.
+>
+> **Mood:** patient textual scrutiny, a bridge between query architecture and
+> final adjudication, quiet archival pleasure.
+>
+> **Constraints:** partial adult badger only; natural muzzle, whiskers, and
+> compact quadrupedal paw; no human fingers, opposable thumb, pawprint icon,
+> tail-only mascot gesture, full character, fox, owl, or other animal. All
+> folios blank or non-legible. No legible text, fake alphabets, labels, logos,
+> watermark, signature, speech bubbles, rendered interface cards, controls,
+> bordered UI panels, rounded app frames, bright full color, cultural costume,
+> wizard props, photorealism, cute proportions, giant eyes, or performance
+> toward the viewer.
+
+## Owl Adjudication Reading Room
+
+- Project asset: `explorer/public/art/owl-adjudication-reading-room-v1.png`
+- Generation tool: built-in `image_gen.imagegen`
+- Generation type: new reference-based generation followed by one targeted
+  continuity edit
+- Generation date: 2026-07-20
+- Generation sequence: one rejected character-drift generation, one accepted
+  base owl generation, and one targeted edit
+- Dimensions: 1714 x 918 pixels
+- Aspect ratio: approximately 1.87:1
+- SHA-256:
+  `e724759b99747ddc1f2ac3f5f68a8e81f8b88a8152dfe90e303581cbcbfb0e0c`
+- Status: integrated as the upper backing layer for retrieval waiting, owl
+  adjudication, and the beginning of the annotated reading order
+
+The first attempt used the full badger room as a character reference and
+produced a badger at the owl lectern. It was rejected immediately and never
+entered the project. The successful base used a temporary crop of the approved
+panorama owl as the primary identity anchor. Its composition, feather, palette,
+and right-edge lectern were accepted. A single targeted edit then removed the
+wrapped head covering, corrected visible wing/talon anatomy, and erased
+pseudo-writing while preserving the room.
+
+### Exact Accepted Owl Base Prompt
+
+> **Use case:** stylized-concept
+>
+> **Asset type:** wide modular website backing layer for the owl adjudication
+> and reading-order room in an adult scholarly digital-humanities research
+> interface
+>
+> **Input images:** Image 1 is the exact adult owl character anchor. Preserve
+> this compact avian identity: round facial disk, hooked beak, feathered head
+> and body, wings rather than mammalian arms, and owl talons rather than paws.
+> Do not turn the owl into a fox, badger, bear, or any mammal. Image 2
+> establishes the overhead parchment, edge-inhabitation, rust-thread, and
+> interface-safe-space vocabulary. Image 3 is the approved visual north star
+> for the same engraved hand and archive palette. This is the next room in the
+> same archive.
+>
+> **Primary request:** Create the owl adjudicator's dedicated reading room
+> after bounded passage candidates have been gathered. The same compact,
+> upright, naturalistic adult OWL from Image 1 works at the upper-right and
+> right page edge, partly cropped, absorbed in judging one candidate passage
+> held apart from a small packet. The owl never looks at the viewer. One
+> feathered wing steadies or separates a loose passage leaf at a slanted
+> lectern-like reading shelf while a small marking tool rests nearby. The
+> action reads as scholarly comparison and evaluation.
+>
+> **Scene/backdrop:** warm sandy parchment merging into a lightly indicated
+> shallow-overhead reading desk. Include one open codex as environmental
+> anchor, several distinct loose candidate leaves arriving as a bounded packet,
+> a compact provenance-receipt shape, a few tabs or pins, and only one partly
+> unrolled scroll at the far periphery. Place one unmistakable engraved owl
+> feather horizontally balanced across the upper-center edge of the reading
+> surface as a quiet signature. Richly inhabited but restrained foliate,
+> celestial, diagrammatic, and evaluative marginalia descend from the top and
+> both outer edges. Fine rust threads and teal/lapis folio marks reconnect to
+> candidate leaves without forming a fixed graph.
+>
+> **Composition/framing:** panoramic horizontal website backing layer,
+> approximately 2:1 to 2.12:1. The owl and densest reading instruments occupy
+> the upper-right/rightmost 28 to 34 percent. Reserve at least 60 percent of
+> center and left, plus lower-middle, as calm pale low-contrast interface-safe
+> parchment for real accessible headings, waiting states, receipts, and reading
+> leaves. The feather may cross the upper-center but must not obstruct the main
+> text zone. Visual density fades inward and downward. No hard frame, baked-in
+> UI panels, or central rendered results.
+>
+> **Style/medium:** refined pen-and-ink engraving mixed with medieval
+> marginalia and early printed-book illustration; finely crosshatched; adult,
+> scholarly, historically strange, intelligent, tactile, slightly whimsical;
+> at least 80 percent monochrome black-brown linework. Preserve the exact
+> artistic hand and compact adult owl identity of Image 1. Competent, mildly
+> opinionated manuscript creature, never cute mascot art or a coloring page.
+>
+> **Color palette:** warm sandy parchment and black-brown ink with the fullest
+> restrained spot-pigment palette in this archive journey: brandy rust #7F2F07,
+> muted harvest gold #C98928, faded copper-sage #928464, lapis navy #041552,
+> deep teal #00678A. Concentrate pigment in completed marginal marks around the
+> inspected candidate, feather, pins, and evaluative instruments; reading
+> surfaces remain pale.
+>
+> **Mood:** contemplative close reading, quiet authority, archival pleasure,
+> mildly obsessive competence, judgment without false certainty.
+>
+> **Constraints:** unmistakably an adult owl, with feathers, facial disk,
+> hooked beak, wings, and talons; no mammalian muzzle, ears, fur, hands, or paws.
+> Plain layered scholarly garment without culturally specific costume; no
+> wrapped head covering. No fox, no badger, no other animal. No
+> culture-to-animal mapping. Illustrated leaves blank or non-legible and
+> subordinate to HTML. No legible text, fake alphabets, labels, logos,
+> watermark, speech bubbles, rendered cards, interface controls, bordered UI
+> panels, rounded app frames, black portal bands, bright full color,
+> photorealism, wizard props, cute proportions, oversized head, giant eyes,
+> human smile, or performance toward the viewer.
+
+### Exact Owl Targeted Edit Prompt
+
+> **Use case:** precise-object-edit
+>
+> **Asset type:** wide owl adjudication-room website backing layer
+>
+> **Input image:** Image 1 is the edit target.
+>
+> **Primary request:** Make exactly three localized corrections while
+> preserving the complete room composition.
+>
+> 1. Remove the wrapped cloth or turban-like covering from the owl’s head.
+> Replace only that covering with an anatomically natural adult owl crown of
+> finely engraved feathers, continuous with the owl’s facial disk and plumage.
+> The owl wears no hat, scarf, hood, head wrap, or cultural head covering.
+>
+> 2. Correct the owl’s visible paper-holding and desk-steadying limbs so they
+> read as species-correct feathered owl wings with small natural talons used
+> carefully at the paper edges, not furry mammalian hands, human fingers, or
+> opposable thumbs. Preserve the exact pose, paper positions, and absorbed
+> scholarly action.
+>
+> 3. Remove every pseudo-written, fake-letter, or fake-alphabet mark from the
+> held candidate leaf and the small hanging receipt/tag near the lower-right of
+> the interface-safe field. Make those paper surfaces blank, softly textured,
+> and non-legible. Preserve their shapes, pins, strings, and placement.
+>
+> **Strict invariants:** change only the owl’s head covering, the visible
+> wing/talon anatomy, and fake writing on paper. Preserve exact crop,
+> dimensions, parchment texture, empty center-left interface-safe field, owl
+> identity and position, facial expression and gaze, balanced feather across
+> the upper center, lectern, open codex, candidate packet, provenance tag shape,
+> scroll, compass, astrolabe, books, lantern, marginalia, stars, foliate marks,
+> rust threads, palette, pigment placement, contrast, and all object positions.
+> Do not redesign, recrop, recolor, simplify, add objects, remove the owl, move
+> the owl, or change the background.
+>
+> No text, letters, fake alphabets, labels, logos, watermark, signature, new
+> characters, mammalian paws, human hands, human fingers, headwear, cute mascot
+> proportions, or performance toward the viewer.
+
 ## Reference Image
 
 The generation used an earlier 1250 × 848 fox/badger/owl composition as a

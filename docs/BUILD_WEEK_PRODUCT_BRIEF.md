@@ -11,6 +11,14 @@ AI librarians adapt a scholar's research concept for original-language search
 and return a small, cited reading list for human interpretation. Number Rants
 is its proving ground, not its topical limit.
 
+The broader product is a portable scholarly staffing layer for bounded digital
+libraries. A source-specific adapter leaves the original corpus untouched while
+projecting it into the canonical document-and-passage catalogue that the fox,
+language specialists, retrieval layer, and owl understand. English corpora may
+use the same catalogue and adjudication path without cross-language adaptation;
+every additional source language requires its own responsible specialist
+guidance and verified shelf behavior.
+
 ## What the prototype must prove
 
 A scholar can begin with an arbitrary question in a language she knows,
@@ -64,6 +72,23 @@ offer lexical search and a documented deterministic tour. Demo mode is visibly
 labeled and must not masquerade as open-ended conceptual or philological
 reasoning.
 
+## Owl reading-aid boundary
+
+The owl must not leave a scholar locked outside a promising source-language
+passage. Every shortlisted result keeps the original text primary while
+offering a visibly labeled **machine-generated working translation**, a brief
+English orientation, an exact evidence span, and a separate relevance judgment
+with reason and confidence. Translation and relevance are distinct claims: the
+model may not use its own smoothed translation as invisible proof that the
+requested relationship exists.
+
+The working translation supports discovery and triage, not quotation or final
+interpretation. Close reading still requires the source edition, a trustworthy
+human translation where available, or a qualified reader of the language.
+Lower-ranked candidates should offer translation on demand rather than spending
+tokens on material the scholar is unlikely to inspect. The approved contract is
+`schema/OWL_READING_AID_CONTRACT_V1.md`.
+
 ## Selected Project Day corpus
 
 The live retrieval shelf is 30 complete Latin works selected from the pinned
@@ -80,11 +105,10 @@ not imply comprehensive Latin or premodern coverage.
 
 The deterministic corpus layer is implemented locally. A manifest-driven
 builder creates a canonical SQLite FTS5 index containing 30 documents and
-61,651 provenance-locked passages, and a diagnostic command returns literal
-Latin matches with stable citations, source hashes, rights, and neighboring
-context. This proves corpus ingestion and lexical retrieval only. The index is
-not yet connected to the Explorer, and literal search is not being presented
-as the finished language-specialist method.
+61,651 provenance-locked passages, and the D1 serving projection now supports
+both diagnostic proposal checks and full approved-plan retrieval in the
+Explorer. Literal search remains the transparent floor, not the finished
+language-specialist method.
 
 The first badger contract is now implemented beneath the interface. One
 collapsed folio contains the language adaptation for one fox concept family,
@@ -101,8 +125,10 @@ friendship, and weather all produced complete inspectable plans. The visual
 folio room is now wired to fox-table approval: folios are collapsed by
 default, expand into editable and pinnable proposals, preserve uncertainty as
 disclosure, support recoverable set-aside, and require separate per-folio
-approval. The local D1 diagnostic bridge now exists; loading and verifying its
-public database, approved-plan execution, and owl adjudication remain unbuilt.
+approval. The local D1 diagnostic and approved-plan bridge, immutable linked
+run receipts, overlap-aware candidate construction, owl adjudication, and
+translation controls now exist. Loading and verifying the public database
+remains unbuilt.
 
 The badger handoff now uses a resumable background response with short polling
 requests rather than one fragile multi-minute HTTP connection. The interface
@@ -121,6 +147,28 @@ hashes, plus the index's orthographic limitations. It does not approve the
 proposal, rank relevance, execute the full plan, or perform owl adjudication.
 The local D1 import is reproducibly generated from the verified SQLite build
 and must carry matching source-commit and content-hash receipts.
+
+The approved plan now becomes one immutable retrieval run. Application code
+executes bounded literal branches, combines nearby hits into reading units,
+keeps at most 18 candidates and three per work, and records hashes over the
+complete fox, badger, corpus, translation-policy, and source packet. A later
+folio revision creates a linked child run without overwriting the older
+candidate list or owl judgment. V1 history lasts for the browser session;
+durable project storage/export remains open.
+
+The owl receives the complete fox map, approved badger folios, compiled plan,
+and provenance-locked candidates in one background response. Strict
+reconciliation refuses invented identities, out-of-packet evidence, non-exact
+quotations, or omitted candidates. Scholars may choose automatic working
+translations only for strong and possible results, request weaker translations
+on demand as immutable addenda, or turn translation off for the run.
+
+A July 20 live path produced 126 raw literal matches, 121 overlap-aware units,
+18 bounded candidates, and 18 owl judgments. Four were strong and translated
+automatically, one was liminal and initially left untranslated, and thirteen
+were incidental matches left visible without automatic translation. The
+liminal result then received a successful separate on-demand addendum. This
+verifies the runtime seam, not general Latin recall or model accuracy.
 
 ## First regression packet
 

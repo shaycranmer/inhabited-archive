@@ -17,7 +17,7 @@ export async function getArchiveDb(): Promise<ArchiveD1Database> {
   const binding = (env as unknown as { DB?: ArchiveD1Database }).DB;
   if (!binding) {
     throw new Error(
-      "The Latin shelf is not attached to this copy of the archive yet.",
+      "The installed shelf is not attached to this copy of the archive yet.",
     );
   }
   return binding;

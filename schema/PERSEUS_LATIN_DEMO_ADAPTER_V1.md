@@ -147,13 +147,16 @@ explicit reminder that shelf absence is not historical absence.
 
 ## Current Boundary
 
-The database, command-line diagnostic, live badger route, folio interface, and
-local D1 diagnostic bridge are real. The Explorer does not open this SQLite
-file: `tools/export_demo_latin_d1.py` projects its serving columns into a D1
-import carrying the same source commit and canonical content hash. The public
-D1 database is not yet loaded, and owl adjudication remains unbuilt.
+The database, command-line diagnostic, live badger route, folio interface,
+local D1 diagnostic bridge, approved-plan retrieval, and owl adjudication are
+real. The Explorer does not open this SQLite file:
+`tools/export_demo_latin_d1.py` projects its serving columns into a D1 import
+carrying the same source commit and canonical content hash. The public D1
+database is not yet loaded.
 
 The inspectable language-adaptation and preview contracts are defined in
 `schema/BADGER_ADAPTATION_CONTRACT_V1.md`. The folio's diagnostic term-test
 control now consumes provenance-locked D1 records rather than model
-recollections. The next layer sends only approved guidance into full search.
+recollections. Full search now receives only approved guidance and returns an
+immutable, source-verified candidate packet as defined in
+`schema/RETRIEVAL_RUN_CONTRACT_V1.md`.

@@ -31,7 +31,7 @@ function summarizePlan(testCase, response) {
         sourceCard: proposal.sourceConceptLabel,
         category: proposal.category,
         effect: proposal.retrievalEffect,
-        latin: proposal.latinExpression,
+        sourceLanguageExpression: proposal.sourceLanguageExpression,
         sense: proposal.englishSense,
         searchFormCount: proposal.searchForms.length,
         falsePositiveCount: proposal.falsePositiveForecast.length,

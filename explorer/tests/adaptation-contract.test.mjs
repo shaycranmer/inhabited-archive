@@ -31,7 +31,7 @@ function modelPlan() {
           sourceConceptLabel: "home",
           category: "lexical_translation",
           retrievalEffect: "include",
-          latinExpression: "domus",
+          sourceLanguageExpression: "domus",
           englishSense: "dwelling or household",
           rationale: "A direct lexical candidate for several home senses.",
           searchForms: ["domus", "domum", "domus"],
@@ -51,7 +51,7 @@ function modelPlan() {
           sourceConceptLabel: "home",
           category: "conceptual_association",
           retrievalEffect: "demote",
-          latinExpression: "penates",
+          sourceLanguageExpression: "penates",
           englishSense: "household gods as an image of home",
           rationale: "An exploratory association, not a translation of home.",
           searchForms: ["penates"],
@@ -195,7 +195,7 @@ test("normalizes exclusion and uncertainty categories to safe retrieval effects"
     sourceConceptLabel: workspace.conceptFamilies[0].title,
     category: "exclusion_rule",
     retrievalEffect: "include",
-    latinExpression: "iter sine cogitatione",
+    sourceLanguageExpression: "iter sine cogitatione",
     englishSense: "An itinerary without reflection.",
   });
   candidate.folios[1].proposals[0].category = "uncertainty";

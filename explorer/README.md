@@ -40,7 +40,7 @@ values to browser code. The repository ignores `.env.local`, while the empty
 `.env.example` remains safe to publish. Restart the local development server
 after adding the key.
 
-The key stays server-side. Both live routes set `store: false` and request
+The key stays server-side. All live model routes set `store: false` and request
 strict structured output from the Responses API. The long-running badger route
 uses background mode and short polling requests so a several-minute folio build
 does not depend on one browser connection surviving. OpenAI temporarily retains
@@ -67,8 +67,9 @@ source commit plus canonical content hash. The app checks that receipt before
 running any preview. This is a reproducible local proof; a public D1 instance
 must be loaded and its receipt checked separately before deployment.
 
-Public live-AI deployment is fail-closed. Both spending routes require exact
-same-origin requests, the fox and badger have explicit output ceilings, and a
+Public live-AI deployment is fail-closed. Every spending route requires exact
+same-origin requests; the fox, badger, owl, and translation calls have explicit
+output ceilings; and a
 production runtime refuses AI calls until an external Cloudflare rate limit or
 equivalent protection has been installed and acknowledged with
 `AI_RATE_LIMIT_CONFIGURED=true`. The flag is an interlock, not the protection
@@ -93,15 +94,28 @@ pnpm run test
 | `app/api/adapt/route.ts` | Starts the Latin badger's GPT-5.6 adaptation of an approved fox table under Rowan's method packet and a strict schema |
 | `app/api/adapt/status/route.ts` | Checks the badger's background-job receipt without starting another paid generation |
 | `app/api/shelf-preview/route.ts` | Runs a literal, read-only diagnostic against the D1 Latin shelf and returns counts, basket distribution, distinct-work examples, and source receipts |
+| `lib/retrieval-run.ts` | Defines immutable linked retrieval receipts, bounded literal-plan compilation, overlap deduplication, deterministic ranking, and reproducibility hashes |
+| `app/api/retrieve/route.ts` | Executes an approved multi-folio plan against D1 without a model and preserves zero-result runs |
+| `app/api/owl/route.ts` | Starts one source-grounded background adjudication of the complete fox, badger, and candidate packet |
+| `app/api/owl/status/route.ts` | Polls that owl receipt without purchasing another generation |
+| `app/api/translate/route.ts` | Creates a separate machine working-translation addendum for one supplied candidate when the run permits it |
 | `db/schema.ts` | The intentionally small D1 serving schema; the full canonical SQLite builder remains authoritative |
-| `app/research-workbench.tsx` | The continuous fox room and concept table, plus the expandable Latin folio desk with proposal editing, pins, recoverable set-aside, and approval |
+| `app/research-workbench.tsx` | The continuous fox room and concept table, expandable language folios, immutable linked run history, and the owl's source-grounded reading room |
 | `app/globals.css` | The visual system for the warm paper-and-ink reading room |
 
-The live Latin adaptation route, visual folio room, and on-demand D1 diagnostic
-shelf preview are implemented. Full approved-plan retrieval remains the next
-runtime layer. The
-three-passage Number Rants packet is retained for regression and
-negative-control testing only.
+The live Latin adaptation route, visual folio room, D1 diagnostic preview,
+approved-plan retrieval, overlap-aware candidate construction, owl
+adjudication, selective automatic translation, and on-demand translation
+addenda are implemented. A July 20 live run turned 126 literal matches into 121
+deduplicated units, sent 18 bounded candidates to the owl, and received 18
+source-grounded judgments. Four strong results translated automatically, and
+one liminal result received a separate on-demand addendum. The three-passage
+Number Rants packet remains a
+regression and negative-control fixture only.
+
+Each rerun is appended with a `parentRunId`; editing and reapproving folios does
+not overwrite earlier candidate lists or owl judgments. V1 run history is held
+for the current browser session. Durable project storage/export remains open.
 
 With the local server running, the versioned topic-general adaptation trials
 can be repeated with `pnpm run eval:badger`. Pass one fixture name—such as
