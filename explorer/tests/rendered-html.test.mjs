@@ -77,6 +77,9 @@ test("keeps the live query contract topic-general", async () => {
   assert.match(client, /describeTablePlacements/);
   assert.match(client, /Probably not what you need/);
   assert.match(client, /highlightedEvidenceText/);
+  assert.match(client, /Evidence-location mismatch/);
+  assert.match(client, /could not be located verbatim in the passage shown/);
+  assert.match(client, /dispositionLabels\[judgment\.disposition\] \?\? judgment\.disposition/);
   assert.doesNotMatch(client, /Crucial original-language passage/);
   assert.doesNotMatch(client, /OPENAI_API_KEY|NEXT_PUBLIC_OPENAI|VITE_OPENAI/);
 

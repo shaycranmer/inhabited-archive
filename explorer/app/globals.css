@@ -1045,6 +1045,8 @@ main { min-height: 100vh; overflow: hidden; }
 .owl-judgment .owl-relationship { color: var(--ink); font-family: var(--serif); font-size: 16px; }
 .owl-key-passage { margin-top: 13px; border-left: 4px solid var(--gold); padding: 11px 14px; background: rgba(245, 224, 175, .34); }
 .owl-key-passage blockquote { margin: 6px 0 0; color: #3f352d; font-family: var(--serif); font-size: 15px; line-height: 1.52; }
+.owl-key-passage.unmatched { border-left-color: var(--rust); background: rgba(255, 240, 233, .62); }
+.owl-key-passage.unmatched > p { margin: 8px 0 0; color: var(--muted); font-size: 10px; line-height: 1.5; }
 .owl-judgment details { margin-top: 9px; color: var(--rust); font-size: 9px; }
 .owl-judgment summary, .evidence-receipt summary { cursor: pointer; user-select: none; }
 .owl-judgment li { color: var(--muted); }

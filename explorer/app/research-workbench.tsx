@@ -2642,16 +2642,17 @@ export function ResearchWorkbench() {
                       if (!candidate) return null;
                       const translation = translationForCandidate(activeOwlRecord, judgment);
                       const loadingId = `${activeOwlRecord.retrieval.runId}:${candidate.candidateId}`;
-                      const exactEvidenceUnitId = candidate.sourceUnits.find(
+                      const exactEvidenceUnit = candidate.sourceUnits.find(
                         (unit) => unit.text.trim() === judgment.evidenceExcerpt.trim(),
-                      )?.segmentId ?? candidate.sourceUnits.find(
+                      ) ?? candidate.sourceUnits.find(
                         (unit) => unit.text.includes(judgment.evidenceExcerpt.trim()),
-                      )?.segmentId ?? judgment.evidenceSegmentIds[0];
+                      );
+                      const exactEvidenceUnitId = exactEvidenceUnit?.segmentId;
                       return (
                         <article className={`owl-result disposition-${judgment.disposition}`} key={judgment.candidateId}>
                           <header>
                             <div>
-                              <span className="owl-verdict">Reading leaf {String(judgmentIndex + 1).padStart(2, "0")} · {dispositionLabels[judgment.disposition]} · {judgment.confidence} confidence</span>
+                              <span className="owl-verdict">Reading leaf {String(judgmentIndex + 1).padStart(2, "0")} · {dispositionLabels[judgment.disposition] ?? judgment.disposition} · {judgment.confidence} confidence</span>
                               <h4>{candidate.author} · {candidate.workTitle}</h4>
                               <p>{candidate.citationLabel}</p>
                               <p className="candidate-catalogue-line">
@@ -2682,8 +2683,18 @@ export function ResearchWorkbench() {
                             </details>
                           </div>
 
+                          {!exactEvidenceUnit ? (
+                            <div className="owl-key-passage unmatched" role="note">
+                              <span>Evidence-location mismatch</span>
+                              <blockquote>{judgment.evidenceExcerpt}</blockquote>
+                              <p>The owl quoted this excerpt, which could not be located verbatim in the passage shown. Treat it as a mismatch receipt and inspect the source context before relying on the judgment.</p>
+                            </div>
+                          ) : null}
+
                           <div className="owl-source">
-                            <span>Passage in context · the owl&apos;s crucial {candidate.languageLabel} unit is highlighted</span>
+                            <span>{exactEvidenceUnit
+                              ? <>Passage in context · the owl&apos;s crucial {candidate.languageLabel} unit is highlighted</>
+                              : <>Passage in context · original {candidate.languageLabel}</>}</span>
                             {candidate.sourceUnits.map((unit) => (
                               <p
                                 className={unit.segmentId === exactEvidenceUnitId
