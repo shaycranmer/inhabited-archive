@@ -10,9 +10,10 @@ project after compaction, interruption, or machine migration.
 - The Inhabited Archive's Latin vertical slice is end to end: fox clarification,
   inspectable concept table, catalogue-scope enforcement, badger folios,
   deterministic retrieval, owl adjudication, and labeled working translation.
-- The private Sites deployment contains the complete thirty-work shelf rather
-  than an interface-only shell. The live shelf receipt verifies 30 works and
-  61,651 passages.
+- The public no-key Sites deployment contains the complete thirty-work shelf
+  rather than an interface-only shell. The live shelf receipt verifies 30 works
+  and 61,651 passages. No hosted OpenAI API key or other runtime environment
+  secret is configured.
 
 - Broad source discovery and the first two major acquisition waves are
   complete.
@@ -56,12 +57,14 @@ Historical logs may retain absolute paths as provenance. Use
   licensing layer, co-designed artwork, live fox worktable, Latin retrieval
   floor, living project state, and Latin adaptation method as separate
   checkpoints.
-- The public GitHub repository is named `shaycranmer/inhabited-archive` and is
-  the publication target for this history.
-- The Explorer under `explorer/` is committed locally. It compiles,
-  and its current lint, build, rendered-page, and provenance tests pass.
-  A private Sites deployment is active; a public GitHub push or public-access
-  change remains a separately authorized publication action.
+- The public GitHub repository is `shaycranmer/inhabited-archive`; its default
+  `main` branch carries the complete tested submission history.
+- The Explorer under `explorer/` compiles and its current lint, production
+  build, 43 application tests, 24 research-infrastructure tests, rendered-page
+  tests, and publication-surface audit pass.
+- GitHub release `v0.1.0-build-week` carries the 9.4 MB compressed,
+  receipt-locked D1 serving shelf. The public Sites deployment provides the
+  full no-key tour and hosted shelf without exposing paid model calls.
 - The project code license is MIT, and original project documentation is CC BY
   4.0 except where otherwise noted. `DATA_LICENSES.md` explicitly keeps
   third-party corpora, editions, translations, and records outside those
@@ -400,12 +403,12 @@ eligible passages together with their catalogue metadata.
 
 ## Next Recommended Build Week Move
 
-Package the roughly 10 MB compressed D1 shelf as a separately downloaded,
-receipt-locked release asset and connect the public Sites database without
-turning the repository into an unexplained data blob. Keep the promised final
-whole-product visual ratification pass separate: fox, badger, owl, responsive
-spacing, and all transitions should be judged together after the public shelf
-connection is stable.
+Complete the Devpost entry: record and upload the under-three-minute public
+YouTube demonstration, supply the `/feedback` Codex Session ID, select the
+Education category, add the public repository and no-key demonstration URLs,
+and submit before 2026-07-21 17:00 PDT. Preserve later visual refinements and
+the Greek shelf as post-submission work rather than destabilizing the ratified
+Latin slice.
 
 ## Separate Research Infrastructure Move
 
