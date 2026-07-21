@@ -27,10 +27,59 @@ export type BoundaryCard = {
   id: string;
   label: string;
   rationale: string;
+  catalogueConstraint: CatalogueConstraint;
   pinned: boolean;
   origin: CardOrigin;
   restored?: boolean;
 };
+
+export type CatalogueConstraintStatus =
+  | "resolved"
+  | "needs_clarification"
+  | "not_catalogue_filter";
+
+export type CatalogueConstraintDimension =
+  | "composition_date"
+  | "genre"
+  | "tradition"
+  | "none";
+
+export type CatalogueConstraint = {
+  status: CatalogueConstraintStatus;
+  dimension: CatalogueConstraintDimension;
+  startYear: number | null;
+  endYear: number | null;
+  values: string[];
+  interpretation: string;
+  clarificationQuestion: string;
+};
+
+export function unresolvedCatalogueConstraint(
+  clarificationQuestion = "What exact dates, genres, or traditions should this boundary mean in the catalogue?",
+): CatalogueConstraint {
+  return {
+    status: "needs_clarification",
+    dimension: "none",
+    startYear: null,
+    endYear: null,
+    values: [],
+    interpretation: "This wording has not yet been translated into an enforceable catalogue rule.",
+    clarificationQuestion,
+  };
+}
+
+export function isCatalogueConstraint(value: unknown): value is CatalogueConstraint {
+  if (!value || typeof value !== "object") return false;
+  const candidate = value as Partial<CatalogueConstraint>;
+  return ["resolved", "needs_clarification", "not_catalogue_filter"].includes(candidate.status ?? "") &&
+    ["composition_date", "genre", "tradition", "none"].includes(candidate.dimension ?? "") &&
+    (candidate.startYear === null || Number.isInteger(candidate.startYear)) &&
+    (candidate.endYear === null || Number.isInteger(candidate.endYear)) &&
+    Array.isArray(candidate.values) &&
+    candidate.values.every((item) => typeof item === "string") &&
+    typeof candidate.interpretation === "string" &&
+    typeof candidate.clarificationQuestion === "string";
+}
 
 export type ModelConceptFamily = {
   title: string;
@@ -41,6 +90,7 @@ export type ModelConceptFamily = {
 export type ModelBoundaryCard = {
   label: string;
   rationale: string;
+  catalogueConstraint: CatalogueConstraint;
 };
 
 export type ModelConceptRelationship = {
@@ -139,12 +189,14 @@ export function hydrateWorkspace(model: ModelWorkspace): QueryWorkspace {
     })),
     scopeChoices: uniqueBy(model.scopeChoices, (scope) => scope.label).map((scope, index) => ({
       ...scope,
+      catalogueConstraint: scope.catalogueConstraint ?? unresolvedCatalogueConstraint(),
       id: `scope-${slug(scope.label)}-${index + 1}`,
       pinned: false,
       origin: "fox" as const,
     })),
     exclusions: uniqueBy(model.exclusions, (exclusion) => exclusion.label).map((exclusion, index) => ({
       ...exclusion,
+      catalogueConstraint: exclusion.catalogueConstraint ?? unresolvedCatalogueConstraint(),
       id: `exclusion-${slug(exclusion.label)}-${index + 1}`,
       pinned: false,
       origin: "fox" as const,
@@ -214,12 +266,30 @@ export function documentedWorkspace(): QueryWorkspace {
       {
         label: "Reflective passages",
         rationale: "Retrieve enough surrounding text to see what the writer thinks or feels about absence and belonging.",
+        catalogueConstraint: {
+          status: "not_catalogue_filter",
+          dimension: "none",
+          startYear: null,
+          endYear: null,
+          values: [],
+          interpretation: "This is a passage-level relevance instruction rather than a work-catalogue boundary.",
+          clarificationQuestion: "",
+        },
       },
     ],
     exclusions: [
       {
         label: "Pure itineraries",
         rationale: "Do not prioritize lists of routes or distances that offer no reflection on home or belonging.",
+        catalogueConstraint: {
+          status: "not_catalogue_filter",
+          dimension: "none",
+          startYear: null,
+          endYear: null,
+          values: [],
+          interpretation: "This is a passage-level relevance instruction rather than a work-catalogue boundary.",
+          clarificationQuestion: "",
+        },
       },
     ],
   });

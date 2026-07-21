@@ -62,8 +62,8 @@ export async function POST(request: Request) {
     return NextResponse.json({
       run,
       notice: run.candidates.length
-        ? `The approved plan found ${run.stats.rawMatchCount.toLocaleString()} literal passage matches and gathered them into ${run.stats.returnedCandidateCount.toLocaleString()} bounded reading candidates for the owl.`
-        : "The approved literal plan returned no candidates on this selective shelf. No owl call was started, and this zero-result run remains preserved.",
+        ? `The approved catalogue scope kept ${run.catalogueScope.eligibleWorkCount} of ${run.catalogueScope.totalWorkCount} works eligible. The language plan then found ${run.stats.rawMatchCount.toLocaleString()} literal passage matches and gathered them into ${run.stats.returnedCandidateCount.toLocaleString()} bounded reading candidates for the owl.`
+        : `The approved catalogue scope kept ${run.catalogueScope.eligibleWorkCount} of ${run.catalogueScope.totalWorkCount} works eligible, but the literal plan returned no passage candidates. No owl call was started, and this zero-result run remains preserved.`,
     });
   } catch (caught) {
     return NextResponse.json(

@@ -3,6 +3,7 @@
 Status: selected; canonical index built; Explorer integration not yet begun
 Decision date: 2026-07-19
 Machine-readable manifest: `sources/indexes/demo_latin_30.csv`
+Reviewed scope catalogue: `sources/indexes/demo_latin_catalogue_scope.csv`
 
 ## Decision
 
@@ -32,6 +33,13 @@ contains six complete works in each of five declared baskets:
 The shelf contains 30 edition-level documents representing 30 distinct works
 and 26 distinct named authors. Repeated authors occur only where a second work
 materially widens the shelf: Cicero, Tertullian, Boethius, and Prudentius.
+
+All 30 works also have reviewed work-level scope metadata: inclusive
+composition-date ranges, date certainty, genre tags, tradition tags, and a
+short dating note. Composition dates remain separate from modern edition
+publication dates. Approved catalogue boundaries are therefore enforceable
+before passage retrieval; an uncertain range that crosses a boundary is kept
+and flagged rather than silently discarded.
 
 Selection favored:
 

@@ -8,6 +8,7 @@
 /sources/indexes/acquisition_wave_2026-07-14/**
 !/sources/indexes/acquisition_wave_2026-07-14/README.md
 !/sources/indexes/demo_latin_30.csv
+!/sources/indexes/demo_latin_catalogue_scope.csv
 
 # Interrupted downloads, archives, databases, and logs
 *.partial

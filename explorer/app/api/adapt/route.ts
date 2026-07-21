@@ -64,6 +64,17 @@ export async function POST(request: Request) {
   }
 
   const workspace = body.workspace;
+  const unresolvedBoundaries = [...workspace.scopeChoices, ...workspace.exclusions].filter(
+    (card) => card.catalogueConstraint.status === "needs_clarification",
+  );
+  if (unresolvedBoundaries.length) {
+    return NextResponse.json(
+      {
+        error: `Ask the fox to sharpen ${unresolvedBoundaries.map((card) => `“${card.label}”`).join(", ")} into an exact catalogue boundary before the language handoff.`,
+      },
+      { status: 409 },
+    );
+  }
   try {
     const apiResponse = await fetch("https://api.openai.com/v1/responses", {
       method: "POST",

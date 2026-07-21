@@ -5,6 +5,7 @@ import type {
   RetrievalEffect,
 } from "./adaptation-plan";
 import type { QueryWorkspace } from "./query-plan";
+import type { CatalogueScopeReceipt } from "./catalogue-scope";
 
 export const RETRIEVAL_RUN_CONTRACT_VERSION = "retrieval-run-v1" as const;
 export const MAX_COMPILED_PROPOSALS = 48;
@@ -56,6 +57,10 @@ export type RawRetrievalHit = {
   sourceSha256: string;
   rightsStatement: string;
   basket: string;
+  compositionDateLabel: string;
+  dateCertainty: string;
+  genreTags: string[];
+  traditionTags: string[];
   lexicalRank: number;
   attribution: CompiledProposal;
 };
@@ -72,6 +77,10 @@ export type CandidateSeed = {
   sourceSha256: string;
   rightsStatement: string;
   basket: string;
+  compositionDateLabel: string;
+  dateCertainty: string;
+  genreTags: string[];
+  traditionTags: string[];
   matchAttributions: RetrievalMatchAttribution[];
   exclusionSignals: RetrievalMatchAttribution[];
   relationshipIds: string[];
@@ -95,6 +104,10 @@ export type CandidateReadingUnit = {
   languageCode: string;
   languageLabel: string;
   basket: string;
+  compositionDateLabel: string;
+  dateCertainty: string;
+  genreTags: string[];
+  traditionTags: string[];
   sourceUrl: string;
   sourceSha256: string;
   rightsStatement: string;
@@ -121,7 +134,9 @@ export type RetrievalRun = {
     corpusId: string;
     sourceCommit: string;
     contentSha256: string;
+    catalogueScopeSha256: string;
   };
+  catalogueScope: CatalogueScopeReceipt;
   hashes: {
     inquirySha256: string;
     languagePlanSha256: string;
@@ -198,6 +213,7 @@ export function executionPacketForHash(run: Pick<
   | "languagePlanSnapshot"
   | "compiledPlan"
   | "corpusReceipt"
+  | "catalogueScope"
   | "candidates"
   | "stats"
   | "limitations"
@@ -212,6 +228,7 @@ export function executionPacketForHash(run: Pick<
     languagePlanSnapshot: run.languagePlanSnapshot,
     compiledPlan: run.compiledPlan,
     corpusReceipt: run.corpusReceipt,
+    catalogueScope: run.catalogueScope,
     candidates: run.candidates,
     stats: run.stats,
     limitations: run.limitations,
@@ -380,6 +397,10 @@ export function deduplicateAndRankHits(
         sourceSha256: first.sourceSha256,
         rightsStatement: first.rightsStatement,
         basket: first.basket,
+        compositionDateLabel: first.compositionDateLabel,
+        dateCertainty: first.dateCertainty,
+        genreTags: first.genreTags,
+        traditionTags: first.traditionTags,
         matchAttributions: attributions.map(attribution),
         exclusionSignals: exclusionSignals.map(attribution),
         relationshipIds,

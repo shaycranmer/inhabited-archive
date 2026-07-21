@@ -16,18 +16,23 @@ can compare them and remember why the reading list changed.
 ## Run Lifecycle
 
 1. The scholar approves every current badger folio.
-2. Application code compiles active source-language forms into bounded literal
+2. Application code applies every resolved fox date, genre, and tradition
+   boundary to reviewed work-level catalogue metadata. An unresolved catalogue
+   boundary stops retrieval. A work whose date range crosses a boundary remains
+   eligible under the disclosed high-recall policy.
+3. Application code compiles active source-language forms into bounded literal
    FTS5 queries. Uncertainty-only proposals do not become hidden search terms.
-3. The read-only D1 shelf executes each positive proposal with a per-proposal
+4. The read-only D1 shelf executes each positive proposal only against eligible
+   works, with a per-proposal
    cap. No model chooses or rewrites source text.
-4. Same-document hits within two source segments become one reading candidate.
+5. Same-document hits within two source segments become one reading candidate.
    Multiple proposal and fox-family receipts remain attached to that candidate.
-5. Deterministic scoring rewards direct forms, cross-family convergence,
+6. Deterministic scoring rewards direct forms, cross-family convergence,
    approved relationships, and Focus of Inquiry; exclusion matches remain
    visible demotion signals.
-6. The application keeps at most 18 candidates, at most three from one work,
+7. The application keeps at most 18 candidates, at most three from one work,
    and at most seven source segments per candidate.
-7. A complete immutable packet travels to the owl only after every supplied
+8. A complete immutable packet travels to the owl only after every supplied
    source unit is checked back against D1.
 
 The current v1 executor is an honest literal floor. It expands the approved
@@ -45,6 +50,8 @@ Every run records:
   removed;
 - the compiled retrieval plan;
 - the installed corpus ID, pinned source commit, and canonical content hash;
+- the reviewed scope-catalogue hash, applied rules, eligible/excluded/flagged
+  work counts, and the named works kept out;
 - raw-match, deduplicated-unit, and returned-candidate counts;
 - every candidate's stable source IDs, original text, citation, source URL,
   source hash, rights statement, matching proposal IDs, relationships,

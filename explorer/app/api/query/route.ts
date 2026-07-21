@@ -15,13 +15,48 @@ export const runtime = "edge";
 
 const MODEL = process.env.OPENAI_MODEL || "gpt-5.6";
 
+const catalogueConstraintSchema = {
+  type: "object",
+  additionalProperties: false,
+  required: [
+    "status",
+    "dimension",
+    "startYear",
+    "endYear",
+    "values",
+    "interpretation",
+    "clarificationQuestion",
+  ],
+  properties: {
+    status: {
+      type: "string",
+      enum: ["resolved", "needs_clarification", "not_catalogue_filter"],
+    },
+    dimension: {
+      type: "string",
+      enum: ["composition_date", "genre", "tradition", "none"],
+    },
+    startYear: { type: ["integer", "null"] },
+    endYear: { type: ["integer", "null"] },
+    values: {
+      type: "array",
+      minItems: 0,
+      maxItems: 8,
+      items: { type: "string" },
+    },
+    interpretation: { type: "string" },
+    clarificationQuestion: { type: "string" },
+  },
+} as const;
+
 const boundarySchema = {
   type: "object",
   additionalProperties: false,
-  required: ["label", "rationale"],
+  required: ["label", "rationale", "catalogueConstraint"],
   properties: {
     label: { type: "string" },
     rationale: { type: "string" },
+    catalogueConstraint: catalogueConstraintSchema,
   },
 } as const;
 
@@ -223,6 +258,16 @@ VOICE AND PRESENCE:
 Translate the scholar's question into a concept map that WOULD be searched if the corpus could be searched intelligently in the scholar's language. Do not answer the historical question. Do not produce Greek, Latin, or other language terms yet; language specialists enter only after map approval.
 
 Organize the dominant search ideas into two to six concept families. Every family title must be unique, and every child label within a family must be unique. Each family should contain a manageable set of child concepts rather than exploding synonyms into dozens of top-level cards. Keep contextual scope separate from active exclusions. An exclusion means the retriever should reject or deprioritize that pattern. Do not treat an idea omitted from present focus as an exclusion.
+
+CATALOGUE BOUNDARIES:
+- Every scope choice and exclusion must include a catalogueConstraint explaining whether it can be enforced against work metadata before passage retrieval.
+- Use composition_date for limits on when a work was composed, never the modern publication date of an edition. Years before the common era are negative integers; 1 BCE is -1 and there is no year zero in the scholar-facing wording.
+- Use genre for work forms such as poetry, epic, drama, history, letters, rhetoric, philosophy, theology, medicine, agriculture, architecture, or encyclopedic writing.
+- Use tradition for catalogue groupings such as classical_latin, early_christian, patristic, late_antique, or medieval.
+- A resolved composition_date constraint describes the works matching the card: startYear and endYear are inclusive bounds, and either may be null for an open interval. A resolved genre or tradition constraint uses lowercase catalogue tags in values.
+- Use not_catalogue_filter when the card is instead a passage-level semantic instruction, such as excluding unreflective itineraries. Keep its dimension none.
+- Use needs_clarification when a familiar label hides materially different scholarly boundaries. For example, “pre-Constantinian” may mean before 306, 312, 313, or another stated turning point. Do not silently choose. Explain the alternatives briefly in interpretation, put the single best follow-up in clarificationQuestion, and make that the fox's nextQuestion.
+- When the scholar has answered the ambiguity, preserve their chosen meaning in a resolved constraint and state the exact rule in interpretation. The visible wording may remain the scholar's own.
 
 On a continuing inquiry, the current worktable may mark exactly one concept family or child concept with inquiryFocus true. This is the scholar's Focus of Inquiry: let it lead later clarification and retrieval planning while keeping the other table ideas available as context, comparison, or complication. Do not silently remove it. It is distinct from a pin: focus expresses intellectual priority, while pinning protects scholar-controlled wording. A focusCardTitle in the request only means that the scholar opened that card for conversation; it is not automatically the Focus of Inquiry.
 

@@ -1,0 +1,45 @@
+CREATE TABLE IF NOT EXISTS work_catalogue_scope (
+  work_urn TEXT PRIMARY KEY,
+  composition_start_year INTEGER NOT NULL,
+  composition_end_year INTEGER NOT NULL,
+  date_label TEXT NOT NULL,
+  date_certainty TEXT NOT NULL,
+  genre_tags_json TEXT NOT NULL,
+  tradition_tags_json TEXT NOT NULL,
+  scope_note TEXT NOT NULL
+);
+--> statement-breakpoint
+INSERT OR REPLACE INTO work_catalogue_scope VALUES
+('urn:cts:latinLit:phi0690.phi003',-29,-19,'29–19 BCE','probable','["poetry","epic"]','["classical_latin"]','Composition range for the Aeneid.'),
+('urn:cts:latinLit:phi0959.phi006',-1,8,'c. 1 BCE–8 CE','probable','["poetry","epic"]','["classical_latin"]','Composition and revision span for the Metamorphoses.'),
+('urn:cts:latinLit:phi0893.phi001',-23,-13,'23–13 BCE','probable','["poetry","lyric"]','["classical_latin"]','Range covers the Odes collection represented by this shelf item.'),
+('urn:cts:latinLit:phi0119.phi001',-210,-180,'c. 210–180 BCE','uncertain','["drama","comedy"]','["classical_latin"]','The dating of Plautus''s Amphitruo is approximate.'),
+('urn:cts:latinLit:phi1294.phi002',86,103,'c. 86–103 CE','probable','["poetry","epigram"]','["classical_latin"]','Range covers the published books of Martial''s epigrams.'),
+('urn:cts:latinLit:stoa0238.stoa002',400,410,'c. 400–410 CE','probable','["poetry","allegory","christian_poetry"]','["early_christian","patristic","late_antique"]','Approximate composition range for Psychomachia.'),
+('urn:cts:latinLit:phi0448.phi001',-52,-50,'c. 52–50 BCE','probable','["history","commentary"]','["classical_latin"]','Approximate composition range for the Gallic War.'),
+('urn:cts:latinLit:phi0631.phi001',-44,-40,'c. 44–40 BCE','probable','["history","monograph"]','["classical_latin"]','Approximate composition range for the Catiline monograph.'),
+('urn:cts:latinLit:phi0914.phi001',-27,17,'27 BCE–17 CE','probable','["history","annalistic_history"]','["classical_latin"]','Long composition span for Ab urbe condita.'),
+('urn:cts:latinLit:phi1351.phi004',100,110,'c. 100–110 CE','probable','["history"]','["classical_latin"]','Approximate composition range for Tacitus''s Histories.'),
+('urn:cts:latinLit:phi1348.abo011',119,122,'c. 119–122 CE','probable','["biography"]','["classical_latin"]','Approximate publication range for the Caesars including Divus Julius.'),
+('urn:cts:latinLit:stoa0023.stoa001',380,391,'c. 380–391 CE','probable','["history"]','["late_antique"]','Approximate composition range for the surviving Res Gestae.'),
+('urn:cts:latinLit:phi0474.phi050',-45,-45,'45 BCE','secure','["philosophy","theology","dialogue"]','["classical_latin"]','Composition year for De natura deorum.'),
+('urn:cts:latinLit:phi0474.phi055',-44,-44,'44 BCE','secure','["philosophy","ethics"]','["classical_latin"]','Composition year for De officiis.'),
+('urn:cts:latinLit:phi1017.phi015',62,65,'c. 62–65 CE','probable','["letters","philosophy"]','["classical_latin"]','Approximate composition range for the Moral Epistles.'),
+('urn:cts:latinLit:phi1002.phi001',93,96,'c. 93–96 CE','probable','["rhetoric","education"]','["classical_latin"]','Approximate composition range for Institutio Oratoria.'),
+('urn:cts:latinLit:stoa0058.stoa001',523,524,'c. 523–524 CE','probable','["philosophy","prosimetrum"]','["late_antique"]','Approximate composition during Boethius''s imprisonment.'),
+('urn:cts:latinLit:phi0550.phi001',-60,-50,'c. 60–50 BCE','uncertain','["poetry","philosophy","didactic"]','["classical_latin"]','Approximate composition range for De rerum natura.'),
+('urn:cts:latinLit:phi0978.phi001',73,77,'c. 73–77 CE','probable','["encyclopedic","natural_history"]','["classical_latin"]','Approximate completion range for Naturalis Historia.'),
+('urn:cts:latinLit:phi0836.phi002',-25,50,'c. 25 BCE–50 CE','uncertain','["medicine","technical"]','["classical_latin"]','Authorship and exact date remain debated; the broad range is intentional.'),
+('urn:cts:latinLit:phi0845.phi002',60,65,'c. 60–65 CE','probable','["agriculture","technical"]','["classical_latin"]','Approximate composition range for Res rustica.'),
+('urn:cts:latinLit:phi1056.phi001',-30,-15,'c. 30–15 BCE','uncertain','["architecture","technical"]','["classical_latin"]','Approximate composition range for De architectura.'),
+('urn:cts:latinLit:phi1254.phi001',150,180,'c. 150–180 CE','probable','["miscellany","antiquarian"]','["classical_latin"]','Approximate compilation range for Noctes Atticae.'),
+('urn:cts:latinLit:phi1318.phi001',97,110,'c. 97–110 CE','probable','["letters"]','["classical_latin"]','Range covers the letter books represented by this shelf item.'),
+('urn:cts:latinLit:stoa0275.stoa009',197,197,'197 CE','secure','["apologetic","theology"]','["early_christian","patristic"]','Standard composition date for Apologeticum.'),
+('urn:cts:latinLit:stoa0275.stoa010',208,212,'c. 208–212 CE','probable','["theology","philosophy"]','["early_christian","patristic"]','Approximate composition range for De anima.'),
+('urn:cts:latinLit:stoa0162.stoa004',370,420,'c. 370–420 CE','probable','["letters","theology"]','["early_christian","patristic","late_antique"]','Range covers Jerome''s letter collection rather than one composition event.'),
+('urn:cts:latinLit:stoa0203.stoa001',150,250,'c. 150–250 CE','uncertain','["dialogue","apologetic"]','["early_christian","patristic"]','The relative and absolute dating of Octavius is disputed.'),
+('urn:cts:latinLit:stoa0058.stoa006',500,525,'c. 500–525 CE','uncertain','["theology"]','["early_christian","patristic","late_antique"]','Approximate range; authorship and dating require caution.'),
+('urn:cts:latinLit:stoa0238.stoa005',395,405,'c. 395–405 CE','probable','["poetry","christian_poetry","theology"]','["early_christian","patristic","late_antique"]','Approximate composition range for Apotheosis.');
+--> statement-breakpoint
+INSERT OR REPLACE INTO shelf_receipt (key, value) VALUES
+('catalogue_scope_sha256', '2eb5eb502cbba0c77c13fed80cd35b14f40b949873af060fa25a1bf1a4590d22');

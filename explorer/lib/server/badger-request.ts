@@ -3,7 +3,7 @@ import {
   type BadgerAdaptationPlan,
   type ModelBadgerAdaptationPlan,
 } from "../adaptation-plan";
-import type { QueryWorkspace } from "../query-plan";
+import { isCatalogueConstraint, type QueryWorkspace } from "../query-plan";
 import { classifyBackgroundResponse } from "./background-response";
 import { extractModelContent } from "./openai-route";
 
@@ -56,7 +56,10 @@ export function isBadgerWorkspace(value: unknown): value is QueryWorkspace {
     );
   const boundaryCardsAreValid = (cards: QueryWorkspace["scopeChoices"]) =>
     cards.length <= 8 && cards.every((card) =>
-      card && typeof card.label === "string" && typeof card.rationale === "string"
+      card &&
+      typeof card.label === "string" &&
+      typeof card.rationale === "string" &&
+      isCatalogueConstraint(card.catalogueConstraint)
     );
   const sourceIds = candidate.conceptFamilies.flatMap((family) => [
     family.id,
@@ -94,10 +97,12 @@ export function approvedBadgerMap(workspace: QueryWorkspace) {
     scopeChoices: workspace.scopeChoices.slice(0, 8).map((scope) => ({
       label: scope.label.slice(0, 240),
       rationale: scope.rationale.slice(0, 1200),
+      catalogueConstraint: scope.catalogueConstraint,
     })),
     exclusions: workspace.exclusions.slice(0, 8).map((exclusion) => ({
       label: exclusion.label.slice(0, 240),
       rationale: exclusion.rationale.slice(0, 1200),
+      catalogueConstraint: exclusion.catalogueConstraint,
     })),
   };
 }

@@ -292,6 +292,7 @@ export function owlInputPacket(run: RetrievalRun) {
     foxInquiry: run.inquirySnapshot,
     approvedLanguageFolios: run.languagePlanSnapshot,
     compiledRetrievalPlan: run.compiledPlan,
+    catalogueScopeReceipt: run.catalogueScope,
     corpusReceipt: run.corpusReceipt,
     candidates: run.candidates.map((candidate) => ({
       candidateId: candidate.candidateId,
@@ -300,6 +301,10 @@ export function owlInputPacket(run: RetrievalRun) {
       citationLabel: candidate.citationLabel,
       languageCode: candidate.languageCode,
       languageLabel: candidate.languageLabel,
+      compositionDateLabel: candidate.compositionDateLabel,
+      dateCertainty: candidate.dateCertainty,
+      genreTags: candidate.genreTags,
+      traditionTags: candidate.traditionTags,
       sourceUnits: candidate.sourceUnits,
       matchAttributions: candidate.matchAttributions,
       exclusionSignals: candidate.exclusionSignals,

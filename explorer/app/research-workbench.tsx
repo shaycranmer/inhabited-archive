@@ -26,6 +26,7 @@ import type {
 import {
   documentedQuestion,
   documentedWorkspace,
+  unresolvedCatalogueConstraint,
   type BoundaryCard,
   type ConceptFamily,
   type ConceptRelationship,
@@ -33,6 +34,13 @@ import {
   type ExplorerResponse,
   type QueryWorkspace,
 } from "../lib/query-plan";
+
+function catalogueConstraintSummary(card: BoundaryCard) {
+  const constraint = card.catalogueConstraint;
+  if (constraint.status === "needs_clarification") return constraint.interpretation;
+  if (constraint.status === "not_catalogue_filter") return constraint.interpretation;
+  return constraint.interpretation || "Resolved catalogue boundary.";
+}
 
 type ConversationTurn = {
   id: string;
@@ -88,12 +96,12 @@ const revisionLoadingNotes = [
 ];
 
 const badgerLoadingNotes = [
-  "The badger is matching each fox card to a language folio.",
-  "He’s separating direct wording from historical associations.",
-  "A broad source-language word has just been asked to explain itself.",
-  "He’s listing the forms a literal catalogue might otherwise miss.",
-  "False positives are being written down before they can look impressive.",
-  "The source cards remain fixed while the folios take shape.",
+  "Each fox card is being adapted into a source-language folio.",
+  "Direct wording is being separated from looser historical associations.",
+  "Broad source-language words are being asked to explain themselves.",
+  "Word forms a literal catalogue might otherwise miss are being listed.",
+  "Likely false positives are being recorded before they can look impressive.",
+  "Your approved fox table remains fixed while the folios take shape.",
 ];
 
 const categoryLabels = {
@@ -108,8 +116,14 @@ const categoryLabels = {
 const effectLabels = {
   include: "Include",
   demote: "Use cautiously",
-  exclude: "Keep out when this pattern applies",
+  exclude: "Keep matching passages out",
   disclose_only: "Disclosure only",
+} as const;
+
+const confidenceLabels = {
+  secure: "Well-supported wording",
+  probable: "Promising wording",
+  speculative: "Exploratory wording",
 } as const;
 
 function FoxLoadingVignette({ compact = false }: { compact?: boolean }) {
@@ -168,7 +182,6 @@ function BadgerLoadingVignette({ status }: { status: "starting" | "queued" | "in
       <div className="folio-motion" aria-hidden="true">
         <span className="folio-sheet folio-sheet-one" />
         <span className="folio-sheet folio-sheet-two" />
-        <span className="folio-lens" />
       </div>
       <div>
         <span>{status === "starting"
@@ -178,8 +191,9 @@ function BadgerLoadingVignette({ status }: { status: "starting" | "queued" | "in
             : "The language desk is working"}</span>
         <p key={noteIndex}>{badgerLoadingNotes[noteIndex]}</p>
         <small>
-          This can take several minutes. The app is checking back without holding one fragile
-          connection open, and your approved fox table will not change.
+          This can take several minutes—usually 3–5. The badger is drafting and checking the language plan—not
+          searching the corpus yet. The app is checking back without holding one fragile connection open.
+          Your approved fox table will not change. Optional literal shelf checks happen later, only when you ask for them.
         </small>
       </div>
     </div>
@@ -480,7 +494,7 @@ export function ResearchWorkbench() {
   const [inquiryStarted, setInquiryStarted] = useState(false);
   const [tableVisible, setTableVisible] = useState(false);
   const [notice, setNotice] = useState(
-    "The question below belongs to a saved, editable example. Open that example without an API call, or replace it and ask the live fox if this local copy has a key.",
+    "For live queries, add an OpenAI API key to this local app. You can open the saved demonstration without one.",
   );
   const [focusedFamilyId, setFocusedFamilyId] = useState<string | null>(null);
   const [pile, setPile] = useState<SetAsideItem[]>([]);
@@ -522,6 +536,7 @@ export function ResearchWorkbench() {
   const [owlError, setOwlError] = useState("");
   const [translationLoadingId, setTranslationLoadingId] = useState<string | null>(null);
   const [translationErrors, setTranslationErrors] = useState<Record<string, string>>({});
+  const [librarianPetted, setLibrarianPetted] = useState(false);
   const badgerAbortRef = useRef<AbortController | null>(null);
   const owlAbortRef = useRef<AbortController | null>(null);
 
@@ -866,6 +881,9 @@ export function ResearchWorkbench() {
       ...card,
       label,
       rationale,
+      catalogueConstraint: unresolvedCatalogueConstraint(
+        `How should “${label}” become an exact catalogue boundary?`,
+      ),
       pinned: true,
       origin: "scholar",
     }));
@@ -890,6 +908,9 @@ export function ResearchWorkbench() {
       rationale: kind === "scope"
         ? "Scope choice added directly by the scholar."
         : "Active exclusion added directly by the scholar.",
+      catalogueConstraint: unresolvedCatalogueConstraint(
+        `What exact catalogue boundary should “${label}” mean?`,
+      ),
       pinned: true,
       origin: "scholar",
     };
@@ -1204,7 +1225,7 @@ export function ResearchWorkbench() {
 
         const completed = result as BadgerResponse;
         setBadgerPlan(completed.plan);
-        setExpandedFolioIds([]);
+        setExpandedFolioIds(completed.plan.folios[0] ? [completed.plan.folios[0].id] : []);
         setProposalDraft(null);
         setShelfPreviewLoadingId(null);
         setShelfPreviewErrors({});
@@ -1353,14 +1374,70 @@ export function ResearchWorkbench() {
 
   function toggleFolioApproval(folioId: string) {
     const approving = badgerPlan?.folios.find((folio) => folio.id === folioId)?.status !== "approved";
+    const nextUnapproved = approving
+      ? badgerPlan?.folios.find((folio) => folio.id !== folioId && folio.status !== "approved")
+      : null;
     updateBadgerFolio(folioId, (folio) => ({
       ...folio,
       status: folio.status === "approved" ? "scholar_edited" : "approved",
     }));
     if (approving) {
-      setExpandedFolioIds((current) => current.filter((id) => id !== folioId));
+      setExpandedFolioIds(nextUnapproved ? [nextUnapproved.id] : []);
       setProposalDraft(null);
+    } else {
+      setExpandedFolioIds([folioId]);
     }
+    requestAnimationFrame(() => {
+      document.getElementById(folioId)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  }
+
+  function startNewInquiry() {
+    if (owlRuns.length && !window.confirm(
+      "Begin a new inquiry? The connected runs in this browser session will be cleared.",
+    )) return;
+    badgerAbortRef.current?.abort();
+    badgerAbortRef.current = null;
+    owlAbortRef.current?.abort();
+    owlAbortRef.current = null;
+    const exampleWorkspace = documentedWorkspace();
+    setQuestion("");
+    setWorkspace(exampleWorkspace);
+    setCardOrder(exampleWorkspace.conceptFamilies.map((family) => family.id));
+    setConversation([]);
+    setMode("demo");
+    setInquiryStarted(false);
+    setTableVisible(false);
+    setNotice(
+      "For live queries, add an OpenAI API key to this local app. You can open the saved demonstration without one.",
+    );
+    setFocusedFamilyId(null);
+    setPile([]);
+    setPileOpen(false);
+    setReceipt(null);
+    setError("");
+    setLoadingTarget(null);
+    setFollowUp("");
+    setMapApproved(false);
+    setBadgerPlan(null);
+    setBadgerLoading(false);
+    setBadgerJobStatus("starting");
+    setBadgerError("");
+    setExpandedFolioIds([]);
+    setProposalDraft(null);
+    setShelfPreviewLoadingId(null);
+    setShelfPreviewErrors({});
+    setTranslationPreference("auto_strong");
+    setOwlRuns([]);
+    setActiveOwlRunId(null);
+    setOwlStage(null);
+    setOwlError("");
+    setTranslationLoadingId(null);
+    setTranslationErrors({});
+    setLibrarianPetted(false);
+    requestAnimationFrame(() => {
+      document.getElementById("fox-room")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
   }
 
   function upsertOwlRun(record: OwlRunRecord) {
@@ -1544,6 +1621,10 @@ export function ResearchWorkbench() {
       ? { kind: "concept" as const, label: focusTerm.label, familyTitle: familyWithFocusedTerm!.title }
       : null;
   const activeOwlRecord = owlRuns.find((record) => record.retrieval.runId === activeOwlRunId) ?? null;
+  const nextFolioForReviewId = badgerPlan?.folios.find((folio) => folio.status !== "approved")?.id ?? null;
+  const unresolvedCatalogueBoundaries = [...workspace.scopeChoices, ...workspace.exclusions].filter(
+    (card) => card.catalogueConstraint.status === "needs_clarification",
+  );
 
   return (
     <main>
@@ -1665,7 +1746,7 @@ export function ResearchWorkbench() {
                 />
                 <div className="fox-conversation-actions">
                   <button className="table-threshold" type="button" onClick={goToTable}>
-                    Take me to the table
+                    I&apos;m done — take me to the table
                   </button>
                   <button className="fox-send" type="submit" disabled={!followUp.trim() || loadingTarget !== null}>
                     {loadingTarget === "conversation" ? "Reconsidering…" : "Answer the fox"}
@@ -1735,7 +1816,7 @@ export function ResearchWorkbench() {
                 void continueConversation(followUp, null);
               }}
             >
-              <label htmlFor="table-fox-follow-up">Talk to the fox about this table</label>
+              <label htmlFor="table-fox-follow-up">Continue talking to the fox about this table</label>
               <textarea
                 id="table-fox-follow-up"
                 value={followUp}
@@ -1752,7 +1833,7 @@ export function ResearchWorkbench() {
           <section className="worktable-pane" aria-label="Inspectable concept map">
             <div className="pane-heading table-heading">
               <div><span>Search concepts · across the table</span><h3>Concept worktable</h3></div>
-              <p>Drag to rearrange. Position never changes retrieval.</p>
+              <p>Open a card to inspect its connected ideas. Dragging only rearranges the table.</p>
             </div>
 
             <div className={`concept-table ${focusedFamilyId ? "has-focus" : ""}`}>
@@ -1790,10 +1871,13 @@ export function ResearchWorkbench() {
                         <strong>{family.title}</strong>
                         <p>{family.rationale}</p>
                         {!expanded ? (
-                          <div className="term-preview">
-                            {family.terms.slice(0, 3).map((term) => <span key={term.id}>{term.label}</span>)}
-                            {family.terms.length > 3 ? <span>+{family.terms.length - 3} more</span> : null}
-                          </div>
+                          <>
+                            <div className="term-preview">
+                              {family.terms.slice(0, 3).map((term) => <span key={term.id}>{term.label}</span>)}
+                              {family.terms.length > 3 ? <span>+{family.terms.length - 3} more</span> : null}
+                            </div>
+                            <span className="family-inspect-cue">Open and inspect <b aria-hidden="true">＋</b></span>
+                          </>
                         ) : null}
                       </button>
                       <div className="family-card-controls">
@@ -1941,7 +2025,7 @@ export function ResearchWorkbench() {
                           </div>
                         </form>
                         <div className="family-footer">
-                          <button type="button" onClick={() => setAsideFamily(family)}>Set aside this family</button>
+                          <button type="button" onClick={() => setAsideFamily(family)}>Move family to set-aside stack</button>
                           <button type="button" onClick={() => setFocusedFamilyId(null)}>Return to the full table</button>
                         </div>
                       </div>
@@ -1966,7 +2050,21 @@ export function ResearchWorkbench() {
                   ) : (
                     <>
                       <strong>{card.label}</strong><p>{card.rationale}</p>
+                      <div className={`catalogue-constraint ${card.catalogueConstraint.status}`}>
+                        <span>{card.catalogueConstraint.status === "resolved"
+                          ? "Catalogue rule"
+                          : card.catalogueConstraint.status === "needs_clarification"
+                            ? "Fox clarification needed"
+                            : "Passage-level guidance"}</span>
+                        <p>{catalogueConstraintSummary(card)}</p>
+                      </div>
                       <div className="boundary-actions">
+                        {card.catalogueConstraint.status === "needs_clarification" ? (
+                          <button type="button" onClick={() => void continueConversation(
+                            `Sharpen the scope card “${card.label}.” Explain any historical ambiguity and translate it into an exact composition-date, genre, or tradition boundary. Do not choose silently if my wording allows multiple boundaries.`,
+                            null,
+                          )}>Ask fox to sharpen</button>
+                        ) : null}
                         <button type="button" onClick={() => setBoundaryDraft({ kind: "scope", id: card.id, label: card.label, rationale: card.rationale })}>Edit</button>
                         <button type="button" className={card.pinned ? "active" : ""} onClick={() => toggleBoundaryPin("scope", card)}>{card.pinned ? "Pinned" : "Pin"}</button>
                         <button type="button" onClick={() => convertBoundary("scope", card)}>Make exclusion</button>
@@ -1995,7 +2093,21 @@ export function ResearchWorkbench() {
                   ) : (
                     <>
                       <strong>{card.label}</strong><p>{card.rationale}</p>
+                      <div className={`catalogue-constraint ${card.catalogueConstraint.status}`}>
+                        <span>{card.catalogueConstraint.status === "resolved"
+                          ? "Catalogue rule"
+                          : card.catalogueConstraint.status === "needs_clarification"
+                            ? "Fox clarification needed"
+                            : "Passage-level guidance"}</span>
+                        <p>{catalogueConstraintSummary(card)}</p>
+                      </div>
                       <div className="boundary-actions">
+                        {card.catalogueConstraint.status === "needs_clarification" ? (
+                          <button type="button" onClick={() => void continueConversation(
+                            `Sharpen the keep-out card “${card.label}.” Explain any historical ambiguity and translate it into an exact composition-date, genre, or tradition boundary. Do not choose silently if my wording allows multiple boundaries.`,
+                            null,
+                          )}>Ask fox to sharpen</button>
+                        ) : null}
                         <button type="button" onClick={() => setBoundaryDraft({ kind: "exclusion", id: card.id, label: card.label, rationale: card.rationale })}>Edit</button>
                         <button type="button" className={card.pinned ? "active" : ""} onClick={() => toggleBoundaryPin("exclusion", card)}>{card.pinned ? "Pinned" : "Pin"}</button>
                         <button type="button" onClick={() => convertBoundary("exclusion", card)}>Make scope</button>
@@ -2031,6 +2143,8 @@ export function ResearchWorkbench() {
             <span>{inquiryFocus ? "Focus of Inquiry" : "The fox asks before approval"}</span>
             <p>{mapApproved
               ? "The map is approved. No corpus search has run yet."
+              : unresolvedCatalogueBoundaries.length
+                ? `${unresolvedCatalogueBoundaries.length} catalogue ${unresolvedCatalogueBoundaries.length === 1 ? "boundary still needs" : "boundaries still need"} the fox's exact interpretation before the shelf can be searched.`
               : inquiryFocus
                 ? `“${inquiryFocus.label}” is the Focus of Inquiry. The other ideas remain in play.`
                 : "Would you like to focus on one area, or keep the inquiry broad? You may mark one family or concept as the Focus of Inquiry if you wish."}</p>
@@ -2039,7 +2153,7 @@ export function ResearchWorkbench() {
             className="approve-map"
             type="button"
             onClick={() => void approveMap()}
-            disabled={badgerLoading || Boolean(badgerPlan)}
+            disabled={badgerLoading || Boolean(badgerPlan) || Boolean(unresolvedCatalogueBoundaries.length)}
           >
             {badgerLoading
               ? "Walking to the language desk…"
@@ -2054,17 +2168,20 @@ export function ResearchWorkbench() {
       </section>
 
       {mapApproved ? (
-        <section className="badger-room" id="badger-room" aria-labelledby="badger-room-title" aria-busy={badgerLoading}>
+        <section className={`badger-room ${badgerPlan ? "has-folios" : "badger-waiting-room"}`} id="badger-room" aria-labelledby="badger-room-title" aria-busy={badgerLoading}>
           <div className="badger-room-art" aria-hidden="true" />
           <div className="badger-room-inner">
             <header className="badger-room-heading">
               <div>
                 <p className="eyebrow">At the badger&apos;s language desk</p>
-                <h2 id="badger-room-title">Let&apos;s see what your question becomes here.</h2>
+                <h2 id="badger-room-title">
+                  {badgerPlan ? "Review the badger’s folios." : "Your question is becoming searchable here."}
+                </h2>
               </div>
               <p>
-                Each folio belongs to one fox card. Open it to inspect the source-language proposals,
-                change the badger&apos;s wording, pin what must remain, or set a suggestion aside.
+                {badgerPlan
+                  ? "Each folio belongs to one fox card. The active folio opens for review; approving it closes the work and brings the next one forward."
+                  : "The badger is adapting each fox card into historically useful source-language wording, while recording ambiguity, exclusions, and likely false positives."}
               </p>
             </header>
 
@@ -2093,7 +2210,11 @@ export function ResearchWorkbench() {
                     const summary = summarizeFolio(folio);
                     const activeCount = folio.proposals.filter((proposal) => proposal.active).length;
                     return (
-                      <article className={`badger-folio confidence-${folio.overallConfidence} ${expanded ? "expanded" : ""} ${folio.status}`} key={folio.id}>
+                      <article
+                        className={`badger-folio confidence-${folio.overallConfidence} ${expanded ? "expanded" : ""} ${folio.status} ${folio.id === nextFolioForReviewId ? "review-target" : ""}`}
+                        id={folio.id}
+                        key={folio.id}
+                      >
                         <button
                           className="folio-cover"
                           type="button"
@@ -2110,8 +2231,10 @@ export function ResearchWorkbench() {
                             <span><b>{summary.directProposalCount}</b> direct</span>
                             <span><b>{summary.exploratoryProposalCount}</b> exploratory</span>
                             <span><b>{summary.warningCount}</b> cautions</span>
-                            <span className={`confidence ${folio.overallConfidence}`}>{folio.overallConfidence}</span>
-                            <span className={`folio-status ${folio.status}`}>{folio.status.replace("_", " ")}</span>
+                            <span className={`confidence ${folio.overallConfidence}`}>{confidenceLabels[folio.overallConfidence]}</span>
+                            <span className={`folio-status ${folio.status}`}>
+                              {folio.status === "approved" ? "Approved" : folio.status === "scholar_edited" ? "Edited · review again" : "Ready for review"}
+                            </span>
                           </span>
                           <span className="folio-open-label">
                             {expanded
@@ -2145,7 +2268,7 @@ export function ResearchWorkbench() {
                                         <strong>{proposal.sourceLanguageExpression || "No source-language form proposed yet"}</strong>
                                       </div>
                                       <div className="proposal-state">
-                                        <span className={`confidence ${proposal.confidence}`}>{proposal.confidence}</span>
+                                        <span className={`confidence ${proposal.confidence}`}>{confidenceLabels[proposal.confidence]}</span>
                                         <span>{effectLabels[proposal.retrievalEffect]}</span>
                                         {proposal.pinned ? <span className="pinned">Scholar pinned</span> : null}
                                       </div>
@@ -2189,7 +2312,6 @@ export function ResearchWorkbench() {
                                           </details>
                                         ) : null}
 
-                                        <p className="verification-note"><span>Evidence status</span>{proposal.verificationNote}</p>
                                         {proposal.shelfPreview ? <ShelfPreviewResult preview={proposal.shelfPreview} languageLabel={badgerPlan.languageLabel} /> : null}
                                         {shelfPreviewErrors[proposal.id] ? (
                                           <p className="shelf-preview-error" role="alert">{shelfPreviewErrors[proposal.id]}</p>
@@ -2214,7 +2336,20 @@ export function ResearchWorkbench() {
                                           {disclosureOnly ? (
                                             <span>Shown as a caution; it will not become a search term.</span>
                                           ) : (
-                                            <button type="button" className={!proposal.active ? "restore" : ""} onClick={() => toggleProposalActive(folio.id, proposal)}>{proposal.active ? "Set aside" : "Restore proposal"}</button>
+                                            <button
+                                              type="button"
+                                              className={!proposal.active ? "restore" : ""}
+                                              onClick={() => toggleProposalActive(folio.id, proposal)}
+                                              aria-pressed={proposal.active}
+                                            >
+                                              {proposal.category === "exclusion_rule"
+                                                ? proposal.active
+                                                  ? "Remove this keep-out rule"
+                                                  : "Restore this keep-out rule"
+                                                : proposal.active
+                                                  ? "Set proposal aside"
+                                                  : "Restore proposal"}
+                                            </button>
                                           )}
                                         </div>
                                       </>
@@ -2252,17 +2387,18 @@ export function ResearchWorkbench() {
                 {badgerPlan.approvalStatus === "approved" ? (
                   <div className="retrieval-launch">
                     <div>
-                      <span>Working translations</span>
-                      <label htmlFor="translation-preference">How should the owl handle translation?</label>
+                      <span>Reading aid</span>
+                      <label htmlFor="translation-preference">Choose how working translations appear in your reading list</label>
+                      <p>These are machine-generated orientation aids for original-language passages, never citable scholarly translations.</p>
                       <select
                         id="translation-preference"
                         value={translationPreference}
                         onChange={(event) => setTranslationPreference(event.target.value as TranslationPreference)}
                         disabled={Boolean(owlStage)}
                       >
-                        <option value="auto_strong">Automatic for strong and possible results</option>
-                        <option value="on_demand">On demand only</option>
-                        <option value="off">Off for this run</option>
+                        <option value="auto_strong">Translate stronger passage leads automatically</option>
+                        <option value="on_demand">Offer translation only when I request it</option>
+                        <option value="off">Do not show translation options for this run</option>
                       </select>
                     </div>
                     <div>
@@ -2298,8 +2434,8 @@ export function ResearchWorkbench() {
                 <h2 id="owl-room-title">Which passages deserve your time?</h2>
               </div>
               <p>
-                The complete approved inquiry travels with every candidate. The owl may
-                arrange a reading list and disclose uncertainty; interpretation remains yours.
+                Your question, fox table, and approved language folios travel with every passage.
+                The owl ranks what deserves attention and explains uncertainty; interpretation remains yours.
               </p>
             </header>
 
@@ -2318,7 +2454,10 @@ export function ResearchWorkbench() {
 
             {owlRuns.length ? (
               <nav className="retrieval-history" aria-label="Connected retrieval runs">
-                <span>Connected retrieval history</span>
+                <div className="retrieval-history-copy">
+                  <span>Your connected search runs</span>
+                  <p>Each rerun preserves the earlier reading list instead of overwriting it. Choose a run to compare what changed.</p>
+                </div>
                 <div>
                   {owlRuns.map((record, index) => (
                     <button
@@ -2327,9 +2466,9 @@ export function ResearchWorkbench() {
                       onClick={() => setActiveOwlRunId(record.retrieval.runId)}
                       key={record.retrieval.runId}
                     >
-                      Run {index + 1}
+                      Run {index + 1}{record.retrieval.runId === activeOwlRunId ? " · Current" : ""}
                       <small>
-                        {record.retrieval.parentRunId ? "linked revision" : "first retrieval"} · {record.retrieval.candidates.length} candidates
+                        {record.retrieval.parentRunId ? "linked revision" : "first retrieval"} · {record.retrieval.candidates.length} passages
                       </small>
                     </button>
                   ))}
@@ -2341,21 +2480,52 @@ export function ResearchWorkbench() {
               <div className="owl-run">
                 <div className="owl-run-receipt">
                   <div>
-                    <span>Immutable retrieval receipt</span>
-                    <strong>{activeOwlRecord.retrieval.runId}</strong>
+                    <span>What this search did</span>
                     <p>
-                      {activeOwlRecord.retrieval.stats.rawMatchCount.toLocaleString()} raw literal matches ·{" "}
-                      {activeOwlRecord.retrieval.stats.deduplicatedCandidateCount.toLocaleString()} deduplicated units ·{" "}
-                      {activeOwlRecord.retrieval.stats.returnedCandidateCount.toLocaleString()} sent forward
+                      <b>{activeOwlRecord.retrieval.catalogueScope.totalWorkCount}</b> catalogued works
+                      <i aria-hidden="true">→</i>
+                      <b>{activeOwlRecord.retrieval.catalogueScope.eligibleWorkCount}</b> eligible after scope
+                      <i aria-hidden="true">→</i>
+                      <b>{activeOwlRecord.retrieval.stats.rawMatchCount.toLocaleString()}</b> literal word matches
+                      <i aria-hidden="true">→</i>
+                      <b>{activeOwlRecord.retrieval.stats.deduplicatedCandidateCount.toLocaleString()}</b> distinct passage groups
+                      <i aria-hidden="true">→</i>
+                      <b>{activeOwlRecord.retrieval.stats.returnedCandidateCount.toLocaleString()}</b> highest-ranked passages sent to the owl
                     </p>
+                    {activeOwlRecord.retrieval.catalogueScope.appliedConstraints.length ? (
+                      <div className="catalogue-receipt-summary">
+                        {activeOwlRecord.retrieval.catalogueScope.appliedConstraints.map((boundary) => (
+                          <p key={`${boundary.effect}:${boundary.cardId}`}>
+                            <strong>{boundary.effect === "exclude" ? "Kept out" : "Searched within"}</strong>
+                            {boundary.constraint.interpretation}
+                          </p>
+                        ))}
+                        <p>
+                          <strong>{activeOwlRecord.retrieval.catalogueScope.excludedWorkCount} works excluded</strong>
+                          {activeOwlRecord.retrieval.catalogueScope.flaggedWorkCount
+                            ? ` ${activeOwlRecord.retrieval.catalogueScope.flaggedWorkCount} uncertain-border works were retained and flagged.`
+                            : " No uncertain-border works required flagging."}
+                        </p>
+                      </div>
+                    ) : null}
                   </div>
                   <details>
-                    <summary>Inspect reproducibility hashes and limits</summary>
+                    <summary>How this run can be reproduced</summary>
+                    <p>Run receipt {activeOwlRecord.retrieval.runId}</p>
                     <p>Inquiry {activeOwlRecord.retrieval.hashes.inquirySha256}</p>
                     <p>Language plan {activeOwlRecord.retrieval.hashes.languagePlanSha256}</p>
                     <p>Candidate packet {activeOwlRecord.retrieval.hashes.candidatePacketSha256}</p>
                     <p>Complete owl packet {activeOwlRecord.retrieval.hashes.executionPacketSha256}</p>
                     <p>Corpus content {activeOwlRecord.retrieval.corpusReceipt.contentSha256}</p>
+                    <p>Scope catalogue {activeOwlRecord.retrieval.corpusReceipt.catalogueScopeSha256}</p>
+                    {activeOwlRecord.retrieval.catalogueScope.excludedWorks.length ? (
+                      <details className="catalogue-work-details">
+                        <summary>Which works the catalogue kept out</summary>
+                        <ul>{activeOwlRecord.retrieval.catalogueScope.excludedWorks.map((work) => (
+                          <li key={work.documentId}>{work.author}, <i>{work.workTitle}</i> ({work.dateLabel}) — {work.reason}</li>
+                        ))}</ul>
+                      </details>
+                    ) : null}
                     <ul>{activeOwlRecord.retrieval.limitations.map((item) => <li key={item}>{item}</li>)}</ul>
                   </details>
                 </div>
@@ -2374,7 +2544,6 @@ export function ResearchWorkbench() {
                   <div className="owl-results">
                     <div className="owl-results-heading">
                       <div><span>Source-grounded reading order</span><h3>{activeOwlRecord.adjudication.judgments.length} annotated reading leaves</h3></div>
-                      <p>Strong and possible passages lead. Liminal, unresolved, and incidental material remains inspectable.</p>
                     </div>
 
                     {activeOwlRecord.adjudication.judgments.map((judgment, judgmentIndex) => {
@@ -2389,35 +2558,49 @@ export function ResearchWorkbench() {
                               <span>Reading leaf {String(judgmentIndex + 1).padStart(2, "0")} · {judgment.disposition} relationship · {judgment.confidence} confidence</span>
                               <h4>{candidate.author} · {candidate.workTitle}</h4>
                               <p>{candidate.citationLabel}</p>
+                              <p className="candidate-catalogue-line">
+                                Composed {candidate.compositionDateLabel} · {candidate.genreTags.join(", ").replaceAll("_", " ")}
+                              </p>
                             </div>
                             <strong>Priority {judgment.priority}</strong>
                           </header>
 
+                          <div className="owl-orientation">
+                            <span>At a glance</span>
+                            <p>{judgment.englishOrientation}</p>
+                          </div>
+
+                          <div className="owl-key-passage">
+                            <span>Crucial original-language passage</span>
+                            <blockquote>{judgment.evidenceExcerpt}</blockquote>
+                          </div>
+
                           <div className="owl-judgment">
+                            <span>Why the owl ranked it</span>
                             <p className="owl-relationship">{judgment.relationshipSummary}</p>
                             <p>{judgment.reasoning}</p>
-                            <blockquote>{judgment.evidenceExcerpt}</blockquote>
-                            <small>Evidence units: {judgment.evidenceSegmentIds.join(" · ")}</small>
                             {judgment.contextNeeded ? (
-                              <p className="context-needed"><strong>More context requested:</strong> {judgment.contextRequest}</p>
+                              <p className="context-needed"><strong>Read more widely around this passage.</strong> The retrieved window is enough to identify a possible connection, but not enough to judge it securely. {judgment.contextRequest}</p>
                             ) : null}
                             {judgment.warnings.length ? (
                               <details><summary>Owl cautions ({judgment.warnings.length})</summary><ul>{judgment.warnings.map((warning) => <li key={warning}>{warning}</li>)}</ul></details>
                             ) : null}
+                            <details className="evidence-receipt">
+                              <summary>Inspect exact evidence identifiers</summary>
+                              <p>{judgment.evidenceSegmentIds.join(" · ")}</p>
+                            </details>
                           </div>
 
                           <div className="owl-source">
-                            <span>Original {candidate.languageLabel} · authoritative source text</span>
+                            <span>Passage in context · original {candidate.languageLabel}</span>
                             {candidate.sourceUnits.map((unit) => (
-                              <p className={unit.matched ? "matched" : ""} key={unit.segmentId}>
+                              <p
+                                className={judgment.evidenceSegmentIds.includes(unit.segmentId) ? "evidence" : unit.matched ? "matched" : ""}
+                                key={unit.segmentId}
+                              >
                                 <small>{unit.citationLabel}</small>{unit.text}
                               </p>
                             ))}
-                          </div>
-
-                          <div className="owl-orientation">
-                            <span>English orientation</span>
-                            <p>{judgment.englishOrientation}</p>
                           </div>
 
                           {translation ? (
@@ -2445,13 +2628,38 @@ export function ResearchWorkbench() {
 
                           <div className="owl-result-footer">
                             <span>{candidate.rightsStatement}</span>
-                            {candidate.sourceUrl ? <a href={candidate.sourceUrl} target="_blank" rel="noreferrer">Inspect source ↗</a> : null}
-                            <small title={candidate.sourceSha256}>Source receipt {candidate.sourceSha256.slice(0, 12)}…</small>
+                            <details className="owl-source-record">
+                              <summary>Inspect source record</summary>
+                              <dl>
+                                <div><dt>Exact citation</dt><dd>{candidate.author} · {candidate.workTitle} · {candidate.citationLabel}</dd></div>
+                                <div><dt>Corpus document</dt><dd>{candidate.documentId}</dd></div>
+                                <div><dt>Source receipt</dt><dd>{candidate.sourceSha256}</dd></div>
+                              </dl>
+                              {candidate.sourceUrl ? <a href={candidate.sourceUrl} target="_blank" rel="noreferrer">Open archival source file ↗ <small>(may be a large XML file)</small></a> : null}
+                            </details>
                           </div>
                         </article>
                       );
                     })}
                   </div>
+                ) : null}
+
+                {activeOwlRecord.adjudication ? (
+                  <section className="after-owl" id="after-owl" aria-label="Continue your research">
+                    <div>
+                      <span>The reading desk remains open</span>
+                      <h3>Where would you like to go next?</h3>
+                      <p>Revise the language folios to create a connected rerun, or begin a separate inquiry from a clean table.</p>
+                    </div>
+                    <div className="after-owl-actions">
+                      <a href="#badger-room">Revise the folios and search again</a>
+                      <button type="button" onClick={startNewInquiry}>Begin a new inquiry</button>
+                      <a href="#method">Review how this list was made</a>
+                    </div>
+                    <button className="pet-librarians" type="button" onClick={() => setLibrarianPetted(true)}>
+                      {librarianPetted ? "The librarians accept your peer review." : "Pet the librarians"}
+                    </button>
+                  </section>
                 ) : null}
               </div>
             ) : null}
@@ -2493,10 +2701,10 @@ export function ResearchWorkbench() {
       <section className="method" id="method">
         <div><p className="eyebrow">The method</p><h2>The model proposes.<br />The archive proves.<br />The scholar decides.</h2></div>
         <ol>
-          <li><span>01</span><p><strong>Clarify the question</strong> until the visible map represents what the scholar wants to investigate.</p></li>
-          <li><span>02</span><p><strong>Adapt concepts historically</strong> through only the language and corpus specialists relevant to the inquiry.</p></li>
-          <li><span>03</span><p><strong>Search real indexed texts</strong> while stable source IDs, locations, context, and rights remain attached.</p></li>
-          <li><span>04</span><p><strong>Return evidence to read.</strong> Confidence, reasons, and disagreement stay visible; interpretation remains human.</p></li>
+          <li><span>01</span><p><strong>Shape the inquiry.</strong> The scholar and fox make the question visible, connected, and editable.</p></li>
+          <li><span>02</span><p><strong>Adapt it to the shelf.</strong> Language specialists propose source-language leads, cautions, and exclusions; the scholar approves what will be searched.</p></li>
+          <li><span>03</span><p><strong>Search and preserve.</strong> The instrument searches indexed texts, deduplicates overlapping passages, and freezes a reproducible receipt for every run.</p></li>
+          <li><span>04</span><p><strong>Build a reading path.</strong> The owl ranks bounded passages, explains uncertainty, and offers clearly labeled working translations; the scholar reads and interprets.</p></li>
         </ol>
       </section>
 

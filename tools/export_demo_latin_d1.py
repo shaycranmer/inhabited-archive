@@ -9,6 +9,8 @@ source database.
 from __future__ import annotations
 
 import argparse
+import csv
+import hashlib
 import json
 import sqlite3
 from pathlib import Path
@@ -40,6 +42,7 @@ def export_d1_import(
     output_path: Path,
     expected_documents: int = 30,
     expected_segments: int = 61651,
+    catalogue_path: Path | None = None,
 ) -> dict[str, object]:
     if output_path.exists():
         raise FileExistsError(f"Refusing to replace existing D1 import: {output_path}")
@@ -49,6 +52,16 @@ def export_d1_import(
         raise FileNotFoundError(f"Latin build receipt not found: {summary_path}")
     if not migration_path.is_file():
         raise FileNotFoundError(f"D1 schema migration not found: {migration_path}")
+    catalogue_path = catalogue_path or Path(__file__).resolve().parents[1] / "sources/indexes/demo_latin_catalogue_scope.csv"
+    if not catalogue_path.is_file():
+        raise FileNotFoundError(f"Reviewed catalogue scope metadata not found: {catalogue_path}")
+    catalogue_bytes = catalogue_path.read_bytes()
+    with catalogue_path.open(encoding="utf-8", newline="") as catalogue_handle:
+        catalogue_rows = list(csv.DictReader(catalogue_handle))
+    if len(catalogue_rows) != expected_documents:
+        raise ValueError(
+            f"The reviewed scope catalogue has {len(catalogue_rows)} works; expected {expected_documents}"
+        )
     summary = json.loads(summary_path.read_text(encoding="utf-8"))
     source_commit = str(summary.get("source_commit", ""))
     content_sha256 = str(summary.get("canonical_content_sha256", ""))
@@ -129,12 +142,39 @@ def export_d1_import(
                     insert_statement("perseus_latin_documents", shelf_columns, row)
                 )
 
+            catalogue_columns = (
+                "work_urn",
+                "composition_start_year",
+                "composition_end_year",
+                "date_label",
+                "date_certainty",
+                "genre_tags_json",
+                "tradition_tags_json",
+                "scope_note",
+            )
+            for row in catalogue_rows:
+                handle.write(insert_statement(
+                    "work_catalogue_scope",
+                    catalogue_columns,
+                    (
+                        row["work_urn"],
+                        int(row["composition_start_year"]),
+                        int(row["composition_end_year"]),
+                        row["date_label"],
+                        row["date_certainty"],
+                        json.dumps(row["genre_tags"].split("|"), separators=(",", ":")),
+                        json.dumps(row["tradition_tags"].split("|"), separators=(",", ":")),
+                        row["scope_note"],
+                    ),
+                ))
+
             receipt_rows = (
                 ("corpus_id", "perseus-latin-demo-v1"),
                 ("source_commit", source_commit),
                 ("content_sha256", content_sha256),
                 ("document_count", str(counts["documents"])),
                 ("segment_count", str(counts["segments"])),
+                ("catalogue_scope_sha256", hashlib.sha256(catalogue_bytes).hexdigest()),
             )
             for row in receipt_rows:
                 handle.write(
@@ -162,6 +202,11 @@ def main() -> int:
         default=project_root / "derived/demo_latin/perseus_latin_demo_v1.sqlite3",
     )
     parser.add_argument(
+        "--catalogue",
+        type=Path,
+        default=project_root / "sources/indexes/demo_latin_catalogue_scope.csv",
+    )
+    parser.add_argument(
         "--summary",
         type=Path,
         default=project_root / "derived/demo_latin/perseus_latin_demo_v1.summary.json",
@@ -184,6 +229,7 @@ def main() -> int:
                 summary_path=args.summary,
                 migration_path=args.migration,
                 output_path=args.output,
+                catalogue_path=args.catalogue,
             ),
             indent=2,
         )

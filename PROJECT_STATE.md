@@ -1,6 +1,6 @@
 # Number Rants Project State
 
-Last updated: 2026-07-20
+Last updated: 2026-07-21
 
 Purpose: cold-start handoff for an Avery or human collaborator entering the
 project after compaction, interruption, or machine migration.
@@ -357,6 +357,15 @@ The owl entrance, waiting room, strong translated leaf, incidental leaf, and
 badger folio bridge were all inspected with real run data. This ratifies the
 new badger/owl visual grammar, not the promised final whole-product polish
 pass.
+
+The July 21 catalogue-scope pass adds reviewed composition-date ranges, date
+certainty, genre tags, and tradition tags for all thirty demo works. Fox scope
+and keep-out cards now carry an inspectable catalogue interpretation.
+Historically loose labels such as “pre-Constantinian” remain unresolved until
+the fox asks which turning point the scholar means. Resolved rules execute
+deterministically before literal retrieval; uncertain-border works are retained
+and flagged, the receipt names every excluded work, and the owl receives only
+eligible passages together with their catalogue metadata.
 
 ## Next Recommended Build Week Move
 

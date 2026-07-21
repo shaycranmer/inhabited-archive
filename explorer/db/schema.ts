@@ -35,6 +35,16 @@ export const latinShelfSchemaStatements = [
   )`,
   `CREATE INDEX IF NOT EXISTS idx_perseus_latin_basket
     ON perseus_latin_documents(basket, shelf_order)`,
+  `CREATE TABLE IF NOT EXISTS work_catalogue_scope (
+    work_urn TEXT PRIMARY KEY,
+    composition_start_year INTEGER NOT NULL,
+    composition_end_year INTEGER NOT NULL,
+    date_label TEXT NOT NULL,
+    date_certainty TEXT NOT NULL,
+    genre_tags_json TEXT NOT NULL,
+    tradition_tags_json TEXT NOT NULL,
+    scope_note TEXT NOT NULL
+  )`,
   `CREATE VIRTUAL TABLE IF NOT EXISTS segment_search USING fts5(
     citation_label,
     text,

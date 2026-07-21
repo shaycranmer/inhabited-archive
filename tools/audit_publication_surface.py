@@ -14,6 +14,7 @@ import subprocess
 ALLOWED_INDEX_FILES = {
     Path("sources/indexes/acquisition_wave_2026-07-14/README.md"),
     Path("sources/indexes/demo_latin_30.csv"),
+    Path("sources/indexes/demo_latin_catalogue_scope.csv"),
 }
 EXCLUDED_PARTS = {
     ".git",

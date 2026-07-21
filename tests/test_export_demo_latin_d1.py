@@ -80,7 +80,22 @@ class D1ExportTests(unittest.TestCase):
                 encoding="utf-8",
             )
             migration = root / "migration.sql"
-            migration.write_text("CREATE TABLE shelf_receipt (key TEXT, value TEXT);\n", encoding="utf-8")
+            migration.write_text(
+                """CREATE TABLE shelf_receipt (key TEXT, value TEXT);
+                CREATE TABLE work_catalogue_scope (
+                  work_urn TEXT, composition_start_year INTEGER, composition_end_year INTEGER,
+                  date_label TEXT, date_certainty TEXT, genre_tags_json TEXT,
+                  tradition_tags_json TEXT, scope_note TEXT
+                );
+                """,
+                encoding="utf-8",
+            )
+            catalogue = root / "catalogue.csv"
+            catalogue.write_text(
+                "work_urn,composition_start_year,composition_end_year,date_label,date_certainty,genre_tags,tradition_tags,scope_note\n"
+                "urn:work,100,110,c. 100–110 CE,probable,history|letters,classical_latin,Fixture scope metadata.\n",
+                encoding="utf-8",
+            )
             output = root / "import.sql"
 
             receipt = exporter.export_d1_import(
@@ -90,12 +105,15 @@ class D1ExportTests(unittest.TestCase):
                 output_path=output,
                 expected_documents=1,
                 expected_segments=1,
+                catalogue_path=catalogue,
             )
             text = output.read_text(encoding="utf-8")
             self.assertEqual(receipt["segments"], 1)
             self.assertIn("isn''t silent", text)
             self.assertIn("'source_commit', '" + "b" * 40 + "'", text)
             self.assertIn("INSERT INTO segment_search(segment_search) VALUES('rebuild')", text)
+            self.assertIn("work_catalogue_scope", text)
+            self.assertIn("catalogue_scope_sha256", text)
 
     def test_refuses_to_replace_an_existing_import(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

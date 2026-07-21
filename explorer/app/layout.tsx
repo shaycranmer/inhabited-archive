@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://number-rants-explorer.openai.site"),
+  metadataBase: new URL("https://inhabited-archive.openai.site"),
   title: {
     default: "The Inhabited Archive",
     template: "%s · The Inhabited Archive",
